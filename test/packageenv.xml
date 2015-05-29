@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<environment>
+  <environ>
+    <var name='tax_rates' value='${AC_PROJ_REF_LOC}/tax_rates_small.csv' override='True' export='True'/>
+  </environ>
+</environment>
