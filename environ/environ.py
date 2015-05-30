@@ -5,48 +5,64 @@ Created on Dec 29, 2013
 '''
 
 import os.path
-import xml.etree.ElementTree as xmltree
 import xml.etree.ElementTree as etree
 from collections import OrderedDict
-import functools
+from xml.dom import minidom
+from namedlist import namedlist
 
-#from namedlist import namedlist as Record
-from namedlist import namedlist as Record
-from .expandvars import expandvars
-from .cast_value import cast_value
+from ..misc import expandvars
+from ..misc import pathhasvars
+from ..misc import cast_value
 
-EnvVar=Record('EnvVar', [('name', None),
-                         ('value', None),
-                         ('override',True),
-                         ('input', False),
-                         ('cast', 'string'),
-                         ('export', False),
-                         ('encrypt', None),
-                         ('rest', None)
-                        ])
+import logging
 
-_EnvTrees=Record('_EnvTrees', [('project', None), 
-                             ('package', None), 
-                             ('personal', None)])
+logger=logging.getLogger(__name__)
+
+EnvVar=namedlist('EnvVar', 
+                 [('name', None),
+                  ('value', None),
+                  ('override',True),
+                  ('input', False),
+                  ('cast', 'string'),
+                  ('export', False),
+                  ('encrypt', ''),
+                  ('rest', None),
+                  ('origin', None),])
+
+NONE_XML_FIELD=['origin']
+DEFAULT_ENVVAR=EnvVar()._asdict()
+
+EnvImport=namedlist('EnvImport', 
+                    [('name', None),
+                     ('path', None),])
+
+_EnvNode=namedlist('_EnvNode', [('project', None), 
+                                ('package', None), 
+                                ('personal', None),])
 
 class EnvironError(Exception):
     def __init__(self, msg):
         self.msg=msg
         
     def __repr__(self):
-        return "Environ error: "+repr(self.msg)
+        return repr(self.msg)
     
     def __str__(self):
-        return "Environ error: "+repr(self.msg)
+        return repr(self.msg)
     
 DOTPROJECTENV='.projectenv'
-PROJECTENV='projectenv'
-DOTPACKAGEENV='.packageenv'
 PACKAGEENV='packageenv'
 PERSONALENV='personalenv'
-ENVTAG='envtag'
+ENVTAG='environ'
 
-ENV_SYNTAX_EXT={'XML':'.xml',}
+Configure=namedlist('Configure', 
+                    [('projectfile', DOTPROJECTENV),
+                     ('packagefile', PACKAGEENV),
+                     ('personalfile', PERSONALENV),
+                     ('xmlenclosure', ENVTAG),
+                     ('syntax', 'xml'),])
+
+ENV_SYNTAX_EXT={'xml':'.xml',}
 
 def advise_project_loc(path=None, mark=None):
     ''' Finds root path for project according to a file that 
@@ -64,11 +80,11 @@ def advise_project_loc(path=None, mark=None):
         relative_location from project_location to program location
     '''
     
+    ''' set default project file as xml '''
     if mark is None:
-        mark=DOTPROJECTENV + ENV_SYNTAX_EXT['XML']
-        
+        mark=DOTPROJECTENV + ENV_SYNTAX_EXT['xml']
+    
     cwd=os.getcwd() if path is None or path == '' else path
-    #(sandbox, rel_loc)=os.path.split(cwd)
     sandbox=os.path.abspath(cwd) 
     rel_loc=''
     found=False
@@ -107,61 +123,66 @@ class Environ(object):
             override quality can be only removed by derivative environment; 
             once removed, cannot be added back by derivative environments.
             '''
-        
-    def __init__(self, env=None, path=None, envtree=True, osenv=True, syntax='XML', config=None): 
+    
+    def __init__(self, osenv=True, configure=None):
         ''' Instantiates Environ object by setting its internal dictionary. 
         Args:
-            env: lest of EnvVar records to use as overrides.
-            path: node path to start with.  Defaults to Current Working Directory.
-            envtree: if set will attempt to load environment tree from root location to path
             osenv: if True, inherit os.environ
-            syntax: structure of environment files, default XML
             
             config: dict of name override to default setting:
                {'.projectenv':'.projectenv',
                 'packageenv':'packageenv',
                 'personalenv':'personalenv',
-                'envtag':'environ'}
+                'xmlenclosure':'environ'}
                 
         Returns: Environ object filled according to tree environment settings.
         Access environ dictionary directly by its attribute environ.
         '''
         
-        self.__config={DOTPROJECTENV:DOTPROJECTENV,
-                       PACKAGEENV:PACKAGEENV,
-                       PERSONALENV:PERSONALENV,
-                       ENVTAG:'environ'}
-        if config is not None:
-            assert isinstance(config, dict), \
+        self.__config=Configure()
+        if configure:
+            assert isinstance(configure, dict), \
                     'Environ config argument must be of dict but found {}'.\
-                    format(type(config).__name__)
-                                
-            self.__config.update(config)
+                    format(type(configure).__name__)
+            self.__config._update(**configure)
         
-        self.__syntax=syntax
+        self.__syntax=self.__config.syntax
         try:
-            self.__ext=ENV_SYNTAX_EXT[syntax]
+            self.__ext=ENV_SYNTAX_EXT[self.__syntax]
         except KeyError:
-            assert True, 'Failed to find syntax extension, unsupported syntax {}.'.format(syntax)
-        self.DOTPROJECTENV=self.__config[DOTPROJECTENV]+self.__ext
-        self.PACKAGEENV=self.__config[PACKAGEENV]+self.__ext
-        self.PERSONALENV=self.__config[PERSONALENV]+self.__ext
+            assert False, 'Failed to find syntax extension, unsupported syntax {}.'.format(self.__syntax)
+        self.DOTPROJECTENV=self.__config.projectfile + self.__ext
+        self.PACKAGEENV=self.__config.packagefile + self.__ext
+        self.PERSONALENV=self.__config.personalfile + self.__ext
         
+        ''' Start with empty environment.  Order is important, as environment may
+        be defined based on previous values.'''
         self.environ=OrderedDict()
+        
+        ''' Next load OS environment '''
         if osenv:
             for name, value in os.environ.items():
-                self.environ[name]=EnvVar(name=name, value=value)
+                self.environ[name]=EnvVar(name=name, value=value, input='True')
+                    
+    def loads(self, env=None, path=None, envtree=True): 
+        ''' Instantiates Environ object by setting its internal dictionary. 
+        Args:
+            env: lest of EnvVar records to use as overrides.
+            path: node path to start with.  Defaults to Current Working Directory.
+            envtree: if set will attempt to load environment tree from root location to path
+                
+        Returns: Environ object filled according to tree environment settings.
+        Access environ dictionary directly by its attribute environ.
+        '''
         
         if path is not None and envtree:
             if not os.path.exists(path):
                 raise EnvironError('Path not found: {}'.format(path))
             self.path=path
-            self.env_trees=self.__get_env_tree(path=path)
-            self.__load_env()
+            self.__build_env_tree(path=path)
         elif envtree:
             self.path=os.getcwd()
-            self.env_trees=self.__get_env_tree(path=self.path)
-            self.__load_env()
+            self.__build_env_tree(path=self.path)
             
         if env is not None:
             env_type =type(env)
@@ -173,6 +194,7 @@ class Environ(object):
                 env_items=None
             for var in env_items:
                 self.environ[var.name]=var.value
+        return self
         
     def __getitem__(self, key):
         try:
@@ -188,10 +210,11 @@ class Environ(object):
         return self.environ.keys()
     
     def items(self):
-        return self.environ.items()
+        result=OrderedDict(map(lambda x: (x[0], x[1].value), self.environ.items()))
+        return result.items()
     
     def values(self):
-        return self.environ.values()
+        return map(lambda x: x.value, self.environ.values())
     
     def get(self, key):
         var=self.environ.get(key)
@@ -199,168 +222,202 @@ class Environ(object):
             value=var.value
         else:
             value=None
-        return value
+        return value   
     
-    def __get_root_env_map(self, root_tag):
-        env_root=root_tag.find(self.__config[ENVTAG])
-        root_map=self.__get_env_map(env_root)
-        return root_map
+    def __get_root_env(self, file):
+        tree=etree.parse(file)
+        root=tree.getroot()
+        env_root=root.find(self.__config.xmlenclosure)
+        return env_root
+    
+    def __eval_env_schema(self, env_schema):
+        ''' evaluate schema; 
+            1. converts vars into self.environ 
+            2. converts imports to evaluated schemas
+            
+        Args:
+            Ordered Dict of Schema
+        '''
+        for var in env_schema.values():
+            if isinstance(var, EnvVar):
+                envvar=EnvVar(**var._asdict())
+                envvar.value=expandvars(source=envvar.value,environ=self)
+                
+                if envvar.export:
+                    os.environ[envvar.name]=envvar.value
+                
+                if envvar.cast is not None:
+                    envvar.rest=dict([(n,expandvars(source=v,environ=self)) \
+                                      for n,v in envvar.rest.items()])
+                    envvar.rest['value']=envvar.value
+                    try:
+                        envvar.value=cast_value(target_type=envvar.cast,
+                                                attrib=envvar.rest)
+                        envvar.rest=None
+                    except KeyError:
+                        msg='Unknown cast: {}; varname {}; origin: {}'\
+                            .format(envvar.cast,envvar.name,envvar.origin)
+                        raise EnvironError(msg)
+                    else:
+                        envvar.cast=envvar.cast
+                self.environ[envvar.name]=envvar  
+            #elif isinstance(var, EnvImport):
+            #    ''' Dive into the import '''
+            #    env_path=OrderedDict()
+            #    path=expandvars(var.path, self)
+            #    env_schema=self.__get_env_path(path)
+            #    print('Load path: ', path)
+            #    self.__print_schema(env_schema)
+            #    self.__eval_env_schema(env_schema)              
+            else:
+                msg='Unknown var type: {}; needs to be EnvVar only'\
+                    .format(var.cast, var.name, var.origin)
+                raise EnvironError(msg)                          
+    
+    def __build_env_tree(self, path):
+        env_schema=self.__get_env_path(path)
+        self.__eval_env_schema(env_schema)
                 
     def __get_env_node(self, path):
-        env_trees=_EnvTrees()
+        ''' get environments files starting from path.
+            adds list of import files and convert them to environment schema '''
+        #env_var_trees=_EnvTrees()
+        #env_import_trees=OrderedDict()
+        node_files=_EnvNode()
         if path is not None:
             sys_env_file = os.path.join(path,self.DOTPROJECTENV)
             if  os.path.isfile(sys_env_file):
-                sys=sys_env_file
-                tree=xmltree.parse(sys)
-                root=tree.getroot()
-                env_map=self.__get_root_env_map(root)
-                env_trees.project=env_map
-            else:
-                env_trees.project={}
+                node_files.project=sys_env_file
             prj_env_file = os.path.join(path, self.PACKAGEENV)
             if  os.path.isfile(prj_env_file):
-                prj=prj_env_file
-                tree=xmltree.parse(prj)
-                root=tree.getroot()
-                env_map=self.__get_root_env_map(root)
-                env_trees.package=env_map
-            else:
-                env_trees.package={}
+                node_files.package=prj_env_file
             lcl_env_file = os.path.join(path, self.PERSONALENV)
             if  os.path.isfile(lcl_env_file):
-                lcl=lcl_env_file
-                tree=xmltree.parse(lcl)
-                root=tree.getroot()
-                env_map=self.__get_root_env_map(root)
-                env_trees.personal=env_map   
-            else:
-                env_trees.personal={}      
-        return env_trees
+                node_files.personal=lcl_env_file
+            node_env=self.__make_node_schema(node_files)
+        return node_env
     
-    def __get_env_tree(self, path):
-        mark=self.DOTPROJECTENV
-        (project_loc, relative_loc) = advise_project_loc(path=path, mark=mark)
-        if relative_loc is not None:
-            rel_nodes=relative_loc.split('/')
-            if project_loc == os.path.abspath(os.sep):
-                raise EnvironError("Project environment file {} doesn't exist for: {}".format(self.DOTPROJECTENV,path))
-            start=project_loc
-            nodes=[start]
-            for node in rel_nodes:
-                start=os.path.join(start, node)
-                nodes.append(start)
-            env_nodes=list()
-            for node in nodes:
-                env_nodes.append(self.__get_env_node(path=node))  
-            return env_nodes  
+    def __update_var(self, source_map, override):
+        name=override.name
+        try: 
+            current=source_map[name]
+        except KeyError:
+            source_map[name]=override
         else:
-            raise EnvironError("Project environment file {} doesn't exist for: {}".format(self.DOTPROJECTENV,path))
-            
-    def __build_var_alter(self, var, alter):
-        new_var=var
-        if var.override \
-          and alter is not None \
-          and len(alter)>0:
-            new_root=alter[0]
-            new_alter=alter[1:]
-            this_var=self.__build_var(var=var, prime=new_root
-                         , alter=new_alter)
-            if this_var is not None:
-                new_var=this_var
-        return new_var
-    
-    def __build_var(self, var, prime, alter):
-        prime_var=prime.get(var.name)
-        if prime_var is not None:
-            if prime_var.override:
-                new_var=self.__build_var_alter(prime_var, alter)
+            if current.override:
+                source_map[name]=override
             else:
-                new_var=prime_var
-            del prime[prime_var.name]
-        else:
-            ''' not in prime - go down the line '''
-            new_var=self.__build_var_alter(var, alter)
-        return new_var
+                msg='Trying to override {}; source {}; offender {};'\
+                    .format(name, current.origin, override.origin)
+                raise EnvironError(msg)
     
-    @classmethod
-    def __get_env_map(self, root):
-        ''' Reads XML properties as environment starting from root '''
-        env_map=OrderedDict()
-        for child in root:
-            attrib=child.attrib
-            try:
-                cast=attrib['cast']
-            except KeyError:
-                var=EnvVar(**attrib)
-            else:
-                adjusted_attrib=dict(filter(lambda x: x[0] != 'cast', attrib.items()))
-                var=EnvVar(cast=cast, **adjusted_attrib)
-            env_map[var.name]=var
-            ''' rest will be set with unused attributes '''
-            var.rest=OrderedDict(set(attrib.items())-set(var._asdict().items()))
-            
-        return env_map
-            
-    def __build_environ(self, head, tail):
-        ''' load head first, then continue with tail. 
-            When loading var from head, check for overrides in tail.'''
-        thisvars=list(head.values())
-        for var in thisvars:
-            built_var=self.__build_var(var=var, prime=head, alter=tail)
-            built_var.value=expandvars(source=built_var.value, environ=self)
-            
-            if var.export:
-                os.environ[var.name]=built_var.value
-            
-            if var.cast is not None:
-                var.rest=dict([(n,expandvars(source=v, environ=self)) for n,v in var.rest.items()])
-                var.rest['value']=built_var.value
-                try:
-                    built_var.value=cast_value(target_type=var.cast, attrib=var.rest)
-                    built_var.rest=None
-                except KeyError:
-                    pass
+    def __update_env_map(self, source_map, override_map):
+        if len(source_map) >0:
+            for name, var in override_map.items():
+                if isinstance(var, EnvVar):
+                    self.__update_var(source_map=source_map, override=var) 
+                elif isinstance(var, EnvImport):
+                    source_map[name]=var
                 else:
-                    built_var.cast=var.cast
-            self.environ[var.name]=built_var
-
-
-        ''' Run down the tail but skipp the last one: local.  
-           This can only include overrides hence already loaded.'''
-        if len(tail) >1:
-            next_head=tail[0]
-            next_tail=tail[1:]
-            self.__build_environ(head=next_head, tail=next_tail)
-            
-    def __load_node_env(self, envnode):
-        '''Updates environ with project variables from read from 
-        .acmisc.props and acmisc.props '''        
-        
-        if envnode.project is not None and envnode.package is not None:
-            project_env_root=envnode.project.find(self.__config[ENVTAG])
-            project_map=self.get_env_map(project_env_root)
-            package_env_root=envnode.package.find(self.__config[ENVTAG])
-            package_map=self.get_env_map(package_env_root)
-            personal_map={}
-            if envnode.personal is not None:
-                personal_env_root=envnode.personal.find(self.__config[ENVTAG])
-                personal_map=self.get_env_map(personal_env_root)
-            self.__build_environ(head=project_map, tail=[package_map, personal_map])
-        return self
+                    msg='Unknown var type: {}; needs to be EnvVar or EnvImport'\
+                        .format(envvar.cast, envvar.name, envvar.origin)                    
+        else:
+            source_map.update(override_map)         
     
-    def __load_env(self):
-        '''Updates environ with project variables from read from 
-        .acmisc.props and acmisc.props ''' 
-        flat=functools.reduce(lambda x,y: x+[y.project, y.package, y.personal], self.env_trees, list())
-        head=flat[0] if len(flat) > 0 else list()
-        tail=flat[1:] if len(flat) > 1 else list()
-        self.__build_environ(head=head, tail=tail)
-        return self
+    def __make_node_schema(self, node_files):
+        ''' Builds environment dictionary out of node_files.
+        personal overrides package which overrides project environment.
+        
+        Args:
+            node_files: EnvNode structure project, package, and personal.
+        '''
+        env_map=OrderedDict()
+        files=filter(lambda f: f is not None, 
+                     [node_files.project, node_files.package, node_files.personal])
+        for file in files:
+            root=self.__get_root_env(file)
+            for child in root:
+                tag=child.tag.lower()
+                if tag == 'var':
+                    attrib=child.attrib
+                    var=EnvVar(**attrib)
+                    var.origin=file
+                    self.__update_var(source_map=env_map, override=var) 
+                        
+                    ''' rest will be set with unused attributes '''
+                    var.rest=OrderedDict(set(attrib.items())-set(var._asdict().items()))
+                elif tag == 'import':
+                    attrib=child.attrib
+                    var=EnvImport(**attrib)
+                    env_map[var.name]=var           
+        return env_map
+               
+    def __get_env_path(self, path):
+        ''' Gets the environment schema representing Path.
+        This include fetching all environment nodes from path to its project '''
+        mark=self.DOTPROJECTENV
+        path=expandvars(path, environ=self)
+        env_nodes=list()
+        if not pathhasvars(path):
+            (project_loc, relative_loc)=advise_project_loc(path=path, mark=mark)
+            if relative_loc is not None:
+                rel_nodes=os.path.split(relative_loc)
+                if project_loc == os.path.abspath(os.sep):
+                    raise EnvironError("Project environment file {} doesn't exist for: {}".format(self.DOTPROJECTENV,path))
+                start=project_loc
+                nodes=[start]
+                for node in rel_nodes:
+                    start=os.path.join(start, node)
+                    nodes.append(start)
+                for node in nodes:
+                    env_node=self.__get_env_node(path=node)
+                    if len(env_node) > 0:
+                        env_nodes.append(env_node) 
+            else:
+                raise EnvironError("Project environment file {} doesn't exist for: {}".format(self.DOTPROJECTENV,path))
+        
+        ''' Combine all path nodes into single dict - override in order'''
+        env_path_raw=OrderedDict()
+        for node in env_nodes:
+            self.__update_env_map(env_path_raw, node)
+            
+        env_path=OrderedDict()
+        for name, var in env_path_raw.items():
+            if not isinstance(var, EnvImport):
+                env_path[name]=var
+            else:
+                path=expandvars(var.path, self)
+                env_import=self.__get_env_path(path)
+                self.__update_env_map(env_path, env_import) 
+                               
+        return env_path
+    
+    def __get_env_map(self, root):
+        env_map=OrderedDict()
+        import_map=OrderedDict()
+        for child in root:
+            tag=child.tag.lower()
+            if tag == 'var':
+                attrib=child.attrib
+                try:
+                    cast=attrib['cast']
+                except KeyError:
+                    var=EnvVar(**attrib)
+                else:
+                    adjusted_attrib=dict(filter(lambda x: x[0] != 'cast', attrib.items()))
+                    var=EnvVar(cast=cast, **adjusted_attrib)
+                env_map[var.name]=var
+                ''' rest will be set with unused attributes '''
+                var.rest=OrderedDict(set(attrib.items())-set(var._asdict().items()))
+            elif tag == 'import':
+                var=EnvImport(**child.attrib)
+                import_map[var.name]=var
+            
+        return import_map, env_map
     
     @classmethod
     def cmd_line_env(cls, env):
-        environ=Environ(envtree=False, osenv=False)
+        environ=Environ(osenv=False)#.loads(envtree=False)
         if env is not None:
             for item in env:
                 parts=item.split('=')
@@ -369,16 +426,21 @@ class Environ(object):
                 environ.environ[name]=EnvVar(name=name, value=value)
         return environ
     
-    def write(self, env_file=None):
-        doc=etree.ElementTree()
-        env=doc.Element('environment')
-        for _, value in self.environ.items():
-            env.SubElement(env, tag='var', attrib=value._asdict() )
-        #doc_file=self.conf_file if env_file is None else env_file
-        if env_file is not None:
-            doc.write(env_file)
+    def __make_var(self, var, prefix_replace=None, prefix_add=None, prefix_exclusicve=True):
+        ''' First try replace, if not done or prefix_exlusive is False, do prefix_add '''
+        new_var=None
+        if prefix_replace:
+            replace_from=prefix_replace[0]
+            if var.name.starts_with(replace_from):
+                new_var=var.copy()
+                replace_to=prefix_replace[1]
+                var.name=replace_to+var.name[len(replace_from):]
+        if prefix_add and (new_var is None or not prefix_exclusicve):
+                new_var=var.copy() if new_var is None else var
+                var.name=prefix_add+var.name
+        return new_var if new_var is not None else var          
             
-    def update_env(self, environ): #base_environ=None, overrides={}):
+    def update_env(self, environ, force_override=False, prefix_replace=None, prefix_add=None, prefix_exclusicve=True): 
         ''' Update override-able environ with values from overrides
             plus adding new vars into environ. 
             The host environment can have two type of parameters.
@@ -390,9 +452,20 @@ class Environ(object):
             The given environment may have two types of variables.
             1. Regular
             2. Input.
+            
             A regular environment variable will override will override base environment if
             base environment is defined overrideable.
             Input environment parameter will not override the environment one if exist.
+            
+            If prefix_replace is provided, it is expected to be a tuple (from_prefix, to_prefix).
+            In this case, variables names in given environment will be replaced by changing 
+            from_prefix into to_prefix
+            
+            If prefix_add is provided, it is expected to be a string that would be added as prefix 
+            to given environ variable names.
+            
+            prefix_exclusive direct the behavior in case both replace is applicable.  When True, 
+            prefix_add will be be done only is prefix_replace is not applicable.
             '''
         if environ is not None:
             env_type=type(environ)
@@ -404,26 +477,27 @@ class Environ(object):
                 items=list()
             
             for var in items:
+                other_var=self.__make_var(var, prefix_replace=None, prefix_add=None, prefix_exclusicve=True)
                 try:
-                    current_var=self.environ[var.name]
+                    self_var=self.environ[other_var.name]
                 except KeyError:
                     ''' if not found in existing Environ - just update Environ '''
-                    if isinstance(var.value, str):
-                        var.value=expandvars(var.value, self)
-                    self.environ[var.name]=var
+                    if isinstance(other_var.value, str):
+                        other_var.value=expandvars(other_var.value, self)
+                    self.environ[other_var.name]=other_var
                 else:
                     ''' if in Environ, override only if defined as such. '''
-                    if current_var.override and not var.input:
-                        if isinstance(var.value, str):
-                            var.value=expandvars(var.value, self)
-                        self.environ[var.name]=var
+                    if self_var.override and not other_var.input or force_override:
+                        if isinstance(other_var.value, str):
+                            other_var.value=expandvars(other_var.value, self)
+                        self.environ[other_var.name]=other_var
                         
                 ''' Export to process' Environ if defined as such '''
-                if var.export:
-                    value=var.value
+                if other_var.export:
+                    value=other_var.value
                     if not isinstance(value, str):
                         value=str(value)
-                    os.environ[var.name]=value
+                    os.environ[other_var.name]=value
         return self
             
     def dup_env(self):
@@ -432,21 +506,66 @@ class Environ(object):
             env[name]=var.value
         return env
         
-    def print_env(self, log=None):
+    def log_env(self, log=None):
         mylog=print if log is None else log
         msg=map(lambda x: '{k}={v}'.format(k=x, v=self.environ[x].value), 
                 sorted(self.environ.keys()))
         mylog('Environ Begin:\n\t'+'\n\t'.join(msg)+'\n\tEnviron End.')
         
-    def xml_repr(self, root=None):
+    def __clean_env_var(self, var):
+        default=DEFAULT_ENVVAR
+        if isinstance(var, EnvVar):
+            var=var._asdict()
+        clean=list(filter(lambda x: x[1] != default[x[0]] and x[0] not in NONE_XML_FIELD, 
+                          var.items()))
+        return OrderedDict(clean)
+        
+    def __xml_repr(self, root=None):
         if root is not None:
-            env=etree.SubElement(root, self.__config[ENVTAG])
+            env=etree.SubElement(root, self.__config.xmlenclosure)
         else:
-            env=etree.Element(self.__config[ENVTAG])
+            env=etree.Element(self.__config.xmlenclosure)
             root=env
         for key in self.environ.keys():
-            etree.SubElement(env, 'var', attrib={key:self.environ[key].value})
+            attrib=self.environ[key]._asdict()
+            try:
+                rest=attrib['rest']
+            except KeyError:
+                pass
+            else:
+                if rest is not None:
+                    attrib.update(rest)
+                del attrib['rest']      
+            
+            attrib=self.__clean_env_var(attrib)
+            attrib=OrderedDict(map(lambda x: (x[0], str(x[1])), attrib.items()))    
+            el=etree.SubElement(env, 'var', attrib=attrib)
         return root
+    
+    def __pretty_xml(self, root=None):
+        xml=self.__xml_repr(root=root)
+        rough_string = etree.tostring(xml, 'utf-8')
+        reparsed = minidom.parseString(rough_string)
+        return reparsed.toprettyxml(indent="  ")
+
+    def dumps(self, env_file=None):
+        ''' writes environ structre into file. 
+        
+        Args:
+            env_file: file to which file be written. '''
+        xml=etree.Element('{http://www.w3.org/2005/Atom}feed',
+                          attrib={'{http://www.w3.org/XML/1998/namespace}lang': 'en'})
+        env=etree.SubElement(xml, 'environment')
+        xml=self.__pretty_xml(root=env)
+        if env_file is not None:
+            et=etree.ElementTree(element=xml)
+            et.write(env_file) 
+        else:
+            return xml
+            
+    def __print_schema(self, schema):
+        for n, v in schema.items():
+            print('{}={}'.format(n,v))  
 
     def __repr__(self):
         txt='environ: {\n' #'Environ Begin:\n'
@@ -455,3 +574,8 @@ class Environ(object):
             body.append('\t({key}={value})'.format(key=key, value=self.environ[key].value))
         txt+='\n'.join(body)+'}\n' #'Environ End.\n'
         return txt
+    
+    def __str__(self):
+        return self.__pretty_xml()
+    
+
