@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<environment>
+  <environ>
+    <var name='AC_ENV_NAME' value='${_TAMPLATE_AC_ENV_NAME}' export='True'/>
+  </environ>
+</environment>

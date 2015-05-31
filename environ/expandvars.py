@@ -50,8 +50,7 @@ def expandvars(source, environ=None):
             tail = source[j:]
             value = environ[name]
             parts=value.split('\\')
-            value='/'.join(parts)
-
+            value=os.path.join(*parts)
             if isinstance(source, bytes):
                 value = value.encode('ASCII')
             source = source[:i] + value
@@ -61,3 +60,31 @@ def expandvars(source, environ=None):
             i = j
     #return os.path.normpath(source)    
     return source
+
+def pathhasvars(source):
+    """Expand shell variables of form $var and ${var}.  Unknown variables
+    are left unchanged."""
+    global _varprog, _varprogb
+    if isinstance(source, bytes):
+        if b'$' not in source:
+            return False
+        if not _varprogb:
+            import re
+            #_varprogb = re.compile(br'\$(\w+|\{[^}]*\})', re.ASCII)
+            _varprogb = re.compile(br'\$(\w+|\{[^}]*\})')
+        search = _varprogb.search
+        start = b'{'
+        end = b'}'
+    else:
+        if '$' not in source:
+            return False
+        if not _varprog:
+            import re
+            #_varprog = re.compile(r'\$(\w+|\{[^}]*\})', re.ASCII)
+            _varprog = re.compile(r'\$(\w+|\{[^}]*\})')
+        search = _varprog.search
+        start = '{'
+        end = '}'
+    i = 0
+    m = search(source, i)
+    return not (not m)  

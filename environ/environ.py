@@ -10,9 +10,9 @@ from collections import OrderedDict
 from xml.dom import minidom
 from namedlist import namedlist
 
-from ..misc import expandvars
-from ..misc import pathhasvars
-from ..misc import cast_value
+from . import expandvars
+from . import cast_value
+from .expandvars import pathhasvars
 
 import logging
 
@@ -320,7 +320,7 @@ class Environ(object):
                     source_map[name]=var
                 else:
                     msg='Unknown var type: {}; needs to be EnvVar or EnvImport'\
-                        .format(envvar.cast, envvar.name, envvar.origin)                    
+                        .format(var.cast, var.name, var.origin)                    
         else:
             source_map.update(override_map)         
     
