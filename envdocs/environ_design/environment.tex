@@ -1,0 +1,217 @@
+\documentclass[accord_design.tex]{subfiles}
+\begin{document}
+\chapter{Environment}\index{Environment}
+Environment is a special type of dictionary holding parameters used by parts. As figure Figure~\ref{fig:environment_tree} (page~\pageref{fig:environment_tree}) shows, there are multiple levels and types of environments playing part in program run.
+
+Environment evaluation process walks the project tree from top to program location.  In each node (package branch), there are three files defining nodes environment:
+
+\section{Definitions}
+\setcounter{tablerownumbers}{0}
+\begin{longtable}{|r|l|p{7cm}|}
+	\hline
+	\emph{No.} & \emph{Name} & \emph{Description} \\ \hline
+	\rownumber & .projectenv\index{environ!.projectenv} & read-only project level environment variables; also identifies project root location. \\ \hline
+	\rownumber & projectenv\index{environ!projectenv} & addon environment for given read-only environment. \\ \hline
+	\rownumber & personalenv\index{environ!personalenv} & personal overrides for project or package environment.  It may include only overrides. \\ \hline
+	\rownumber & .packageenv \index{environ!.packageenv}& read-only package level environment variables. \\ \hline
+	\rownumber & packageenv \index{environ!packageenv}& addon environment for given read-only environment in local or upper environments. \\ \hline
+\caption{Environment Definitions}
+\label{table:environ-defs}
+\end{longtable}
+
+
+\section{Program Interface}
+Within programs there are three types of access points to environment variables.
+To get environ dictionary, program can perform the following command:
+\begin{enumerate}
+	\item Loading environment variables from project structure
+	\item Updating environment variable in program
+	\item Accessing environment variables
+\end{enumerate}
+
+\subsection{Loading environmentvariables}\index{Environment!Loading}\index{Environment!Environ}
+
+	\begin{lstlisting}
+	import environ 
+	env=environ.Environ()
+	\end{lstlisting}
+
+When Program evaluates environment, it starts with root location going down the tree up to an including package environment of Program location. 
+
+Environ \_\_init\_\_ has the following signature:
+\textbox{Environ(env=None, path=None, envtree=True, osenv=True, syntax='XML', config=None\emph{dict})}
+
+\begin{table}[!htb]
+\setcounter{tablerownumbers}{0}
+\begin{tabularx}{\linewidth}{|r|X|X|l|}
+	\hline
+	\emph{No.} & \emph{Name} & \emph{Description} & \emph{Default Values} \\ \hline
+	\rownumber & env & Direct environment list to override environment tree. & None \\ \hline
+	\rownumber & path & Path to project location or to package within. & Current working directory \\ \hline
+	\rownumber & envtree & If set, load enviroenment files from directory tree. & True \\ \hline
+	\rownumber & osenv & If set, load os environ. & True \\ \hline
+	\rownumber & syntax & Expected structure of environment files. & XML \\ \hline
+	\rownumber & config\index{environ!config} & dictionary overriding default names for environment files. & '.projectenv':'.projectenv' \\ \cline{4-4} 
+	& & & 'packageenv':'packageenv' \\ \cline{4-4} 
+	& & & 'personalenv':'personalenv' \\ \cline{4-4}
+	& & & 'envtag':'environ' \\ \hline
+\end{tabularx}
+\caption{Environ signature arguments}
+\label{table:environ-args}
+\end{table}
+
+In addition to file name overrides, configuration dictionary can provide syntax used in these files and the environment root tag under which environment variables are defined. 
+
+Within derivative articles environment can be updated with environment variable as follows:
+
+\subsection{Updating environment variables}\index{Environment!Update}\index{Environment!EnvVar}
+\begin{lstlisting}
+env.update([
+  EnvVar(name='REJ_ALLOWED',cast='integer',value=0,input=True),
+  EnvVar(name='OUT_FILE',value='${VAR_LOC}/summary.csv',cast='path', input=True),
+  EnvVar(name='RATE',override='True',cast='integer',value=5,input=True)])
+\end{lstlisting}
+
+\paragraph{input} flag will set the variable with the value of parent environment, if defined.
+\paragraph{override} flags environment variable as changeable by derivative program articles.
+
+\subsection{Accessing environment variables}
+\begin{lstlisting}
+ofile=env.environ[]'OUT_FILE']
+rate=env.get('RATE')
+\end{lstlisting}
+
+In the first case, direct access, KeyError exception may be sent if variable name does not exist.
+
+In the second example, None value will be returned if not found. 
+
+
+\section{Single Project Environment Tree}
+At each node, environment is evaluated in the following sequence:
+\begin{enumerate}
+	\item First .projectenv, if available, is read and set.
+	\item Next packageenv, if available, is read and set.
+	\item Finally, personalenv overrides, if available, is read and set.
+\end{enumerate} 
+
+\begin{figure}[h]
+	\centering
+	\framebox[\textwidth]{
+		\begin{minipage}{0.9\textwidth}
+			\dirtree{%
+				.1 Project.
+				.2 .projectenv.
+				.2 packageenv.
+				.2 personalenv.
+				.2 Program A.
+				.2 Package A.
+				.3 packageenv.
+				.3 personalenv.
+				.4 Package AB.
+				.5 packageenv.
+				.5 personalenv.
+				.5 Program AB.
+			}
+		\end{minipage}
+	}
+	\caption{Environment tree example}
+	\label{fig:environment_tree}
+\end{figure}
+
+Figure~\ref{fig:environment_tree} (page~\pageref{fig:environment_tree}) shows example environment tree in a project.
+
+When the above command is engaged in Program A, it would include environment setting of Project and Package A locations.  Program AB will include Program A, Package A and Package AB accordingly.
+
+\lstset{
+	basicstyle=\ttfamily\footnotesize,
+	columns=fullflexible,
+	showstringspaces=false,
+	numbers=left,                   % where to put the line-numbers
+	numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+	stepnumber=1,
+	numbersep=5pt,                  % how far the line-numbers are from the code
+	backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+	showspaces=false,               % show spaces adding particular underscores
+	showstringspaces=false,         % underline spaces within strings
+	showtabs=false,                 % show tabs within strings adding particular underscores
+	frame=none,                   % adds a frame around the code
+	rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
+	tabsize=2,                      % sets default tabsize to 2 spaces
+	captionpos=b,                   % sets the caption-position to bottom
+	breaklines=true,                % sets automatic line breaking
+	breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+	title=\lstname,                   % show the filename of files included with \lstinputlisting;
+	% also try caption instead of title  
+	commentstyle=\color{gray}\upshape
+}
+
+
+\lstdefinelanguage{XML}
+{
+	morestring=[s][\color{mauve}]{"}{"},
+	morestring=[s][\color{black}]{>}{<},
+	morecomment=[s]{<?}{?>},
+	morecomment=[s][\color{dkgreen}]{<!--}{-->},
+	stringstyle=\color{black},
+	identifierstyle=\color{DarkBlue},
+	keywordstyle=\color{red},
+	morekeywords={xmlns,xsi,noNamespaceSchemaLocation,type,id,x,y,source,target,version,tool,transRef,roleRef,objective,eventually,name,value,cast,export,input, environ}% list your attributes here
+}
+%\lstinputlisting[language=XML]{'sources/environ_example_1.xml'}
+
+\begin{lstlisting}[language=XML, label=lst:project_env, caption=Example for project environment file]
+<environment>
+  <environ>
+    <var name='AC_WS_LOC' value='${HOME}/sand/myproject' export='True'/>
+    <var name='AC_ENV_NAME' value='test' export='True'/>
+    <var name='AC_VAR_BASE' value='${HOME}/var/data/' export='True'/>
+    <var name='AC_LOG_LEVEL' value='DEBUG' export='True'/> 
+    <var name='AC_LOG_STDOUT' value='True' override='True' export='True' cast='boolean'/>
+    <var name='AC_LOG_STDOUT_LEVEL' value='INFO' override='True' export='True'/>
+    <var name='AC_LOG_STDERR' value='True' override='True' export='True' cast='boolean'/>
+    <var name='AC_LOG_STDERR_LEVEL' value='CRITICAL' override='True' export='True'/>
+  </environ>
+</environment>
+\end{lstlisting}
+
+Listing \ref{lst:project_env} shows example of an environment file.  Core environment is tagged under \emph{\textless~environ\textgreater}.  Environ mechanism would look for this tag.  Once found, it would evaluate its content as environment directive.
+
+\paragraph{Note:} \emph{\textless~environment\textgreater} tag is to provide enclosure to environ.  Environ mechanism is not depending on its existent per se.  However, some kind on enclosure is required;  \emph{\textless~environ\textgreater} can not be in top level of the XML.
+
+\section{Multiple Project Environment Tree}
+At each import, environment is evaluated in the following sequence:
+\begin{enumerate}
+	\item First get the node representation of imported path.
+	\item Evaluate it recursively (loading imports).
+	\item Finally, insert the resulted imported map instead of the import directive (flat).
+\end{enumerate} 
+
+%\lstinputlisting[language=XML]{'sources/environ_example_1.xml'}
+
+\begin{lstlisting}[language=XML, label=lst:env_proja, caption='Project A: /Users/me/projs/proja/.projectenv.xml]
+<environment>
+  <environ>
+    <var name='FILE_LOC' value='/Users/me/tmp/' export='True'/>
+    <var name='FILE_NAME' value='aname' export='True'/>
+    <var name='FILE_PATH' value='${FILE_LOC}${FILE_NAME}' export='True'/>
+  </environ>
+</environment>
+\end{lstlisting}
+
+\begin{lstlisting}[language=XML, label=lst:env_projb, caption='Project B: /Users/me/projs/projb/.projectenv.xml']
+<environment>
+  <environ>
+    <import name='proja' path='/Users/me/projs/proja/.projectenv.xml'/>
+    <var name='FILE_NAME' value='bname' export='True'/>
+  </environ>
+</environment>
+\end{lstlisting}
+
+Listings \ref{lst:env_projb} shows import project directive within project B's environment.  In project B's context, FILE\_PATH will result with the value \emph{/Users/me/tmp/bname}.
+
+\paragraph{Recursive} inclusion of environments (recursive import statement) would cause evaluation of environment variables to be loaded recursively.  Consideration is given to overrides in post import environments.
+
+\paragraph{Note:}import path can only include environment variables that are in the OS level pre-eveluation.
+
+
+\end{document}

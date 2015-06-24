@@ -1,0 +1,16 @@
+\documentclass{article}
+
+\usepackage{tikz-uml}
+%\usepackage{pgf-umlsd}
+
+\begin{document}
+
+\begin{sequencediagram}
+  \newthread{t}{:Thread}
+  \newinst[1]{i}{:Instance}
+
+  \begin{messcall}{t}{function()}{i}
+  \end{messcall}
+\end{sequencediagram} 
+
+\end{document}

@@ -1,0 +1,16 @@
+\begin{theindex}
+
+  \item environ
+    \subitem .packageenv, 5
+    \subitem .projectenv, 5
+    \subitem config, 6
+    \subitem packageenv, 5
+    \subitem personalenv, 5
+    \subitem projectenv, 5
+  \item Environment, 5
+    \subitem Environ, 6
+    \subitem EnvVar, 6
+    \subitem Loading, 6
+    \subitem Update, 6
+
+\end{theindex}

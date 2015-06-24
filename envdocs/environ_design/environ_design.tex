@@ -1,0 +1,31 @@
+\documentclass[10pt]{book}
+\usepackage{../common/sty/ezcbook}
+\usepackage{dirtree}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{fancyhdr}
+\usepackage{amssymb}
+\usepackage{listings}
+\pagestyle{fancy}
+\fancyfoot[C]{Copyright \textcopyright\ This material is declared a work of Acricel LTD. and is subject to copyright protection. Approved for limited distribution only.}
+\renewcommand{\headrulewidth}{0pt}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+\graphicspath{ {images/} }
+\newcounter{tablerownumbers}
+\newcommand\rownumber{\stepcounter{tablerownumbers}\arabic{tablerownumbers}}
+\newcommand{\acpart}{\emph{part}}
+
+\begin{document}
+
+\subfile{title}
+
+\tableofcontents
+%\listoffigures
+%\listoftables
+
+
+\subfile{environment}
+
+\printindex
+
+\end{document}
