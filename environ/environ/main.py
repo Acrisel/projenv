@@ -9,14 +9,13 @@ import xml.etree.ElementTree as etree
 from collections import OrderedDict
 from xml.dom import minidom
 from namedlist import namedlist
-import pprint
 import logging
 
 logger=logging.getLogger(__name__)
 
-from . import expandvars
+from .expandvars import expandvars
 from .expandvars import pathhasvars
-from . import cast_value
+from .cast_value import cast_value
 
 EnvVar=namedlist('EnvVar', 
                  [('name', None),
@@ -251,10 +250,7 @@ class Environ(object):
         for var in env_schema.values():
             if isinstance(var, EnvVar):
                 envvar=EnvVar(**var._asdict())
-                envvar.value=expandvars(source=envvar.value,environ=self)
-                
-                if envvar.export:
-                    os.environ[envvar.name]=envvar.value
+                envvar.value=expandvars(source=envvar.value,environ=self)                
                 
                 if envvar.cast is not None and envvar.cast != 'string' and isinstance(envvar.value, str):
                     ''' TODO: check why sub fields cannot be variables '''
@@ -273,7 +269,10 @@ class Environ(object):
                         raise EnvironError(msg)
                     else:
                         envvar.cast=envvar.cast
+                        
                 self.environ[envvar.name]=envvar   
+                if envvar.export:
+                    os.environ[envvar.name]=str(envvar.value)
                 if self.trace_env:
                     if isinstance(self.trace_env, list):
                         if envvar.name in self.trace_env or not self.trace_env:

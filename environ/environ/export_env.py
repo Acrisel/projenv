@@ -4,7 +4,7 @@ Created on Mar 4, 2014
 
 @author: arnon
 '''
-from .environ import Environ
+from environ.main import Environ
 import argparse
 
 if __name__ == '__main__':
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     environ.load_env()
     
     envvars=[\
-          'export {}="{}"'.format(var.name, var.value) for var in environ.environ.values() \
+          'export {}="{}"'.format(var.name, var.value) for var in environ.main.values() \
           if var.export]
     
     print("\n".join(envvars))
