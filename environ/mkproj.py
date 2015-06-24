@@ -156,9 +156,9 @@ def mk_project():
     
 if __name__ == '__main__':
     projectloc=mk_project()
-    from accord.bin.mkperonal import personalize
+    from .mkperonal import personalize
     personalize(projectloc)    
-    from accord.bin.mkprojlocs import mk_proj_locs
+    from .mkprojlocs import mk_proj_locs
     mk_proj_locs(projectloc)
 
 

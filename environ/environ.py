@@ -9,14 +9,14 @@ import xml.etree.ElementTree as etree
 from collections import OrderedDict
 from xml.dom import minidom
 from namedlist import namedlist
-
-from . import expandvars
-from . import cast_value
-from .expandvars import pathhasvars
-
+import pprint
 import logging
 
 logger=logging.getLogger(__name__)
+
+from . import expandvars
+from .expandvars import pathhasvars
+from . import cast_value
 
 EnvVar=namedlist('EnvVar', 
                  [('name', None),
@@ -60,7 +60,8 @@ Configure=namedlist('Configure',
                      ('packagefile', PACKAGEENV),
                      ('personalfile', PERSONALENV),
                      ('xmlenclosure', ENVTAG),
-                     ('syntax', 'xml'),])
+                     ('syntax', 'xml'),
+                     ('lineage', False)])
 
 ENV_SYNTAX_EXT={'xml':'.xml',}
 
@@ -124,12 +125,12 @@ class Environ(object):
             once removed, cannot be added back by derivative environments.
             '''
     
-    def __init__(self, osenv=True, configure=None):
+    def __init__(self, osenv=True, configure=None, trace_env=None, ulogger=None):
         ''' Instantiates Environ object by setting its internal dictionary. 
         Args:
             osenv: if True, inherit os.environ
             
-            config: dict of name override to default setting:
+            configure: dict of name override to default setting:
                {'.projectenv':'.projectenv',
                 'packageenv':'packageenv',
                 'personalenv':'personalenv',
@@ -139,6 +140,12 @@ class Environ(object):
         Access environ dictionary directly by its attribute environ.
         '''
         
+        self.trace_env=trace_env
+        if ulogger:
+            self.logger=ulogger.getChild(__name__)
+        else:
+            self.logger=logger
+            
         self.__config=Configure()
         if configure:
             assert isinstance(configure, dict), \
@@ -175,6 +182,9 @@ class Environ(object):
         Access environ dictionary directly by its attribute environ.
         '''
         
+        if path:
+            path=os.path.abspath(path)
+        
         if path is not None and envtree:
             if not os.path.exists(path):
                 raise EnvironError('Path not found: {}'.format(path))
@@ -185,7 +195,7 @@ class Environ(object):
             self.__build_env_tree(path=self.path)
             
         if env is not None:
-            env_type =type(env)
+            env_type=type(env)
             if env_type is list:
                 env_items=env
             elif env_type is OrderedDict or env_type is dict:
@@ -230,7 +240,7 @@ class Environ(object):
         env_root=root.find(self.__config.xmlenclosure)
         return env_root
     
-    def __eval_env_schema(self, env_schema):
+    def __eval_env_schema_bottom_up(self, env_schema):
         ''' evaluate schema; 
             1. converts vars into self.environ 
             2. converts imports to evaluated schemas
@@ -246,9 +256,12 @@ class Environ(object):
                 if envvar.export:
                     os.environ[envvar.name]=envvar.value
                 
-                if envvar.cast is not None:
-                    envvar.rest=dict([(n,expandvars(source=v,environ=self)) \
-                                      for n,v in envvar.rest.items()])
+                if envvar.cast is not None and envvar.cast != 'string' and isinstance(envvar.value, str):
+                    ''' TODO: check why sub fields cannot be variables '''
+                    #vardict=var._asdict()
+                    #envvar.rest=dict([(n,expandvars(source=v,environ=self)) \
+                    #                  for n,v in vardict.items()])
+                    
                     envvar.rest['value']=envvar.value
                     try:
                         envvar.value=cast_value(target_type=envvar.cast,
@@ -260,29 +273,62 @@ class Environ(object):
                         raise EnvironError(msg)
                     else:
                         envvar.cast=envvar.cast
-                self.environ[envvar.name]=envvar  
-            #elif isinstance(var, EnvImport):
-            #    ''' Dive into the import '''
-            #    env_path=OrderedDict()
-            #    path=expandvars(var.path, self)
-            #    env_schema=self.__get_env_path(path)
-            #    print('Load path: ', path)
-            #    self.__print_schema(env_schema)
-            #    self.__eval_env_schema(env_schema)              
+                self.environ[envvar.name]=envvar   
+                if self.trace_env:
+                    if isinstance(self.trace_env, list):
+                        if envvar.name in self.trace_env or not self.trace_env:
+                            self.logger.debug('\tEnvtrace: eval ({}): {}'\
+                                              .format(envvar.name, envvar.value))
+       
             else:
                 msg='Unknown var type: {}; needs to be EnvVar only'\
                     .format(var.cast, var.name, var.origin)
                 raise EnvironError(msg)                          
-    
+
+    def __eval_env_schema_top_down(self):
+        names=list(self.environ.keys())
+        names.reverse()
+        for name in names:
+            envvar=self.environ[name]
+            if isinstance(envvar.value, str):
+                new_value=expandvars(source=envvar.value,environ=self)  
+                envvar.value=new_value 
+                         
+            if envvar.export:
+                os.environ[envvar.name]=str(envvar.value)
+            if envvar.cast is not None and envvar.cast != 'string' and isinstance(envvar.value, str):
+                ''' TODO: check why sub fields cannot be variables '''
+                vardict=envvar._asdict()
+                #envvar.rest=dict([(n,expandvars(source=v,environ=self)) \
+                #                  for n,v in vardict.items()])
+                envvar.rest=vardict
+                envvar.rest['value']=envvar.value
+                try:
+                    envvar.value=cast_value(target_type=envvar.cast,
+                                            attrib=envvar.rest)
+                    envvar.rest=None
+                except KeyError:
+                    msg='Unknown cast: {}; varname {}; origin: {}'\
+                        .format(envvar.cast,envvar.name,envvar.origin)
+                    raise EnvironError(msg)
+                else:
+                    envvar.cast=envvar.cast
+            self.environ[envvar.name]=envvar   
+            if self.trace_env:
+                if isinstance(self.trace_env, list):
+                    if envvar.name in self.trace_env or not self.trace_env:
+                        self.logger.debug('\tEnvtrace: eval ({}): {}'\
+                                          .format(envvar.name, envvar.value))
+            
+        
     def __build_env_tree(self, path):
         env_schema=self.__get_env_path(path)
-        self.__eval_env_schema(env_schema)
+        self.__eval_env_schema_bottom_up(env_schema)
+        self.__eval_env_schema_top_down()
                 
     def __get_env_node(self, path):
         ''' get environments files starting from path.
             adds list of import files and convert them to environment schema '''
-        #env_var_trees=_EnvTrees()
-        #env_import_trees=OrderedDict()
         node_files=_EnvNode()
         if path is not None:
             sys_env_file = os.path.join(path,self.DOTPROJECTENV)
@@ -294,24 +340,41 @@ class Environ(object):
             lcl_env_file = os.path.join(path, self.PERSONALENV)
             if  os.path.isfile(lcl_env_file):
                 node_files.personal=lcl_env_file
+            self.logger.debug('Found node schema: \n\t{}'.format(repr(node_files)))
             node_env=self.__make_node_schema(node_files)
         return node_env
     
     def __update_var(self, source_map, override):
+        ''' Update surce_map with override env variable.
+        Consider its override quality before doing so. '''
         name=override.name
         try: 
             current=source_map[name]
         except KeyError:
             source_map[name]=override
+            if self.trace_env:
+                if isinstance(self.trace_env, list):
+                    if name in self.trace_env or not self.trace_env:
+                        self.logger.debug('\tEnvtrace: ({}):\n\tinitial: {} @ {}'\
+                                     .format(name, override.value, override.origin))
         else:
             if current.override:
+                override.origin=current.origin + ',' + override.origin
                 source_map[name]=override
+                if self.trace_env:
+                    if isinstance(self.trace_env, list):
+                        if name in self.trace_env or not self.trace_env:
+                            self.logger.debug('\tEnvtrace: ({}):\n\tcurrent: {} @ {}\n\toverride: {} @ {}'\
+                                         .format(name, current.value, current.origin,
+                                                 override.value, override.origin))
             else:
                 msg='Trying to override {}; source {}; offender {};'\
                     .format(name, current.origin, override.origin)
                 raise EnvironError(msg)
     
     def __update_env_map(self, source_map, override_map):
+        ''' Update source_map with vars from override_map.  
+        Take override quality into considerations '''
         if len(source_map) >0:
             for name, var in override_map.items():
                 if isinstance(var, EnvVar):
@@ -320,7 +383,8 @@ class Environ(object):
                     source_map[name]=var
                 else:
                     msg='Unknown var type: {}; needs to be EnvVar or EnvImport'\
-                        .format(var.cast, var.name, var.origin)                    
+                        .format(var.cast, var.name, var.origin)  
+                    raise EnvironError(msg)                 
         else:
             source_map.update(override_map)         
     
@@ -335,6 +399,7 @@ class Environ(object):
         files=filter(lambda f: f is not None, 
                      [node_files.project, node_files.package, node_files.personal])
         for file in files:
+            self.logger.debug('Loading schema: {}'.format(file))
             root=self.__get_root_env(file)
             for child in root:
                 tag=child.tag.lower()
@@ -349,26 +414,44 @@ class Environ(object):
                 elif tag == 'import':
                     attrib=child.attrib
                     var=EnvImport(**attrib)
-                    env_map[var.name]=var           
+                    env_map[var.name]=var  
+        #printly=[k for k,v in env_map.items()]
+        #print('env_map ({}): \n\t{}'.format(node_files, printly))         
         return env_map
                
     def __get_env_path(self, path):
         ''' Gets the environment schema representing Path.
-        This include fetching all environment nodes from path to its project '''
+        This include fetching all environment nodes from path to its project. 
+        For each path node, we add its environment into list (env nodes).
+         '''
         mark=self.DOTPROJECTENV
+        
         path=expandvars(path, environ=self)
+        self.logger.debug('Evaluating file: {}'.format(path))
+        
         env_nodes=list()
         if not pathhasvars(path):
+            path=os.path.abspath(path)
             (project_loc, relative_loc)=advise_project_loc(path=path, mark=mark)
             if relative_loc is not None:
-                rel_nodes=os.path.split(relative_loc)
+                # find nodes to evaluate by walking the tree and fetching 
+                # environment files 
+                head=relative_loc
+                rel_nodes=list()
+                while head:
+                    head, tail=os.path.split(head)
+                    if tail:
+                        rel_nodes.append(tail)
+                #rel_nodes=os.path.split(relative_loc)
+                rel_nodes.reverse()
                 if project_loc == os.path.abspath(os.sep):
                     raise EnvironError("Project environment file {} doesn't exist for: {}".format(self.DOTPROJECTENV,path))
                 start=project_loc
                 nodes=[start]
                 for node in rel_nodes:
-                    start=os.path.join(start, node)
-                    nodes.append(start)
+                    if node:
+                        start=os.path.join(start, node)
+                        nodes.append(start)
                 for node in nodes:
                     env_node=self.__get_env_node(path=node)
                     if len(env_node) > 0:
@@ -378,18 +461,23 @@ class Environ(object):
         
         ''' Combine all path nodes into single dict - override in order'''
         env_path_raw=OrderedDict()
-        for node in env_nodes:
-            self.__update_env_map(env_path_raw, node)
-            
+        for env_node in env_nodes:
+            self.__update_env_map(env_path_raw, env_node)
+                
+        ''' Now that that env nodes are consolidated - bring in imports. '''
         env_path=OrderedDict()
         for name, var in env_path_raw.items():
             if not isinstance(var, EnvImport):
                 env_path[name]=var
-            else:
+            else: # this is import
                 path=expandvars(var.path, self)
+                path=os.path.abspath(path)
+                self.logger.debug('Importing environment: {}'.format(path))
+                if pathhasvars(path):
+                    raise EnvironError('Trying to import named {} with unresolved path: {}'.format(name, path))
                 env_import=self.__get_env_path(path)
                 self.__update_env_map(env_path, env_import) 
-                               
+                
         return env_path
     
     def __get_env_map(self, root):
