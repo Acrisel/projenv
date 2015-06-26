@@ -469,8 +469,20 @@ class Environ(object):
             if not isinstance(var, EnvImport):
                 env_path[name]=var
             else: # this is import
-                path=expandvars(var.path, self)
-                path=os.path.abspath(path)
+                if var.path:
+                    path=expandvars(var.path, self)
+                    path=os.path.abspath(path)
+                else:
+                    import importlib
+                    package=importlib.import_module(var.name)
+                    if package:
+                        path=package.__path__
+                        if isinstance(path, list):
+                            path=path[0]
+                    else:
+                        msg='Cannot find {} to import; please make sure it is on PYTHONPATH or add path attribute'.format(path)
+                        self.logger.critical(msg)
+                        raise EnvironError(msg)
                 self.logger.debug('Importing environment: {}'.format(path))
                 if pathhasvars(path):
                     raise EnvironError('Trying to import named {} with unresolved path: {}'.format(name, path))
