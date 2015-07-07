@@ -8,6 +8,13 @@ from environ import Environ
 import os.path
 import logging
 
+# Ensure variable is defined
+x = os.environ.get('HOME','None')
+
+if x is 'None':
+    ##os.environ['HOME'] = os.environ.get('USERPROFILE','None')
+    os.environ['HOME'] = str('C:/Users/uri')
+    
 logger=logging.getLogger(__name__)
 
 handler = logging.StreamHandler()
