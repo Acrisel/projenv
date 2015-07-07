@@ -404,6 +404,8 @@ class Environ(object):
                 tag=child.tag.lower()
                 if tag == 'var':
                     attrib=child.attrib
+                    if 'value' not in attrib.keys():
+                        attrib['value'] = child.text
                     var=EnvVar(**attrib)
                     var.origin=file
                     self.__update_var(source_map=env_map, override=var) 

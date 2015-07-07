@@ -1,45 +1,9 @@
-<?xml version="1.0" ?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <environment>
   <environ>
-    <var name='AC_WS_LOC' value='/var/acrisel/sand/ezcoord/ezcoorddev/' override='True' export='True' cast='path'/>
-    <var name='AC_PROJ_NAME' value='accord_examples' export='True'/>
-    <var name='AC_PROJ_VER' value='0.90.0' export='True'/>
-    <var name='AC_PROJ_LOC' value='${AC_WS_LOC}/${AC_PROJ_NAME}/' export='True'/>
-    <var name='AC_PROJ_SRC_LOC' value='${AC_PROJ_LOC}/src/' export='True'/>
-    <var name='AC_PROJ_REF_LOC' value='${AC_PROJ_LOC}/ref/' export='True'/>
-    <var name='AC_PROJ_FMT_LOC' value='${AC_PROJ_LOC}/fmt/' export='True'/>
-    <var name='AC_PROJ_RES_LOC' value='${AC_PROJ_LOC}/res/' export='True'/>
-    <var name='AC_VAR_BASE' value='/var/accord/data/' override='True' export='True'/>
-    <var name='AC_ENCODING' value='ascii' export='True'/>
-    <var name='AC_BYTEORDER' value='network' export='True'/>
-    <var name='AC_PAGE_BYTES' value='2048' cast='integer' export='True'/>
-    <var name='AC_RUNNER_NAMEDPIPE' value='commander' export='True'/>
-    
-    <var name='AC_ENV_NAME' value='.' override='True' export='True'/>
-    <var name='AC_VAR_LOC' value='${AC_VAR_BASE}/${AC_ENV_NAME}/' override='True' export='True'/>
-    <var name='AC_LOG_LOC' value='$AC_VAR_LOC/log' override='True' export='True'/>
-    <var name='AC_REJ_LOC' value='$AC_VAR_LOC/rej' override='True' export='True'/>
-    <var name='AC_RUN_LOC' value='$AC_VAR_LOC/run' override='True' export='True'/>
-    <var name='AC_IN_LOC' value='$AC_VAR_LOC/in' override='True' export='True'/>
-    <var name='AC_OUT_LOC' value='$AC_VAR_LOC/out' override='True' export='True'/>
-    <var name='AC_LKUP_LOC' value='$AC_VAR_LOC/lkup' override='True' export='True'/>
-    <var name='AC_TMP_LOC' value='$AC_VAR_LOC/tmp' override='True' export='True'/>
-    
-    <!-- Logging controls -->
-    <var name='AC_LOG_LEVEL' value='DEBUG' override='True' export='True'/>
-    <var name='AC_LOG_STDOUT' value='False' override='True' export='True' cast='boolean'/>
-    <var name='AC_LOG_STDOUT_LEVEL' value='INFO' override='True' export='True'/>
-    <var name='AC_LOG_STDERR' value='True' override='True' export='True' cast='boolean'/>
-    <var name='AC_LOG_STDERR_LEVEL' value='WARNING' override='True' export='True'/>
-    
-    <!-- Accord Private Vars -->
-    <var name='AC_WORK_LOC_NAME' value='.work' override='True' export='True'/>
-    <var name='AC_DUMPER_MAX_OPEN' value='10' override='True' export='True' cast='integer'/>
-    
-    <!-- Influence part behavior -->
-    <var name='AC_REJECTS_ALLOWED' value='0' override='True' cast='integer' export='True'/>
-    <var name='AC_USE_REJECT_PORT' value='True' override='True' cast='boolean' export='True'/>
-    <var name='AC_ENGINE_DEFAULT' value='Process' override='True' cast='string' export='True'/>
+    <var name='A1' export='True' override='True'>11</var> 
+    <var name='B1' value='${A1}' export='True' override='True'/> 
+    <var name='A2' value='21' export='True' override='True'/> 
+    <var name='B2' value='${A2}' export='True' override='True'/> 
   </environ>
 </environment>

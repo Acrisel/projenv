@@ -7,5 +7,9 @@
     <var name='A2' value='${E2}' export='True' override='True'/>
     <var name='X1' value='\nimport os\nresult=os.listdir("${HOME}")'
                    cast='expr' export='True' override='True'/>
+    <var name='X2' 
+                   cast='expr' export='True' override='True'>
+import os
+result=os.listdir("${HOME}")</var>
   </environ>
 </environment>
