@@ -27,11 +27,11 @@ if __name__ == '__main__':
     module_loc=os.path.join(root_loc,'lvl1', 'lvl2', 'lvl3')
     module_env=Environ(osenv=True,trace_env=['T1','T2','T3','T4','T5','T6'], ulogger=logger)
     module_env.loads(path=module_loc)
+    print('POST ENVIRON:', repr(module_env))
     
     class TestEnviron(unittest.TestCase):
         def test_Dot_Projectenv_value(self):
             #T1 - Test for setting env variable in .projectenv locally
-            #print('POST ENVIRON:', repr(module_env))
             T1_value = os.environ.get('T1','None')
             T1_expected = 'D_PR_LOC'
             self.assertEqual(T1_value, T1_expected, "T1 is not correct")
@@ -49,6 +49,9 @@ if __name__ == '__main__':
             T3_value = os.environ.get('T3','None')
             T3_expected = 'PACK_LOC_T3'
             self.assertEqual(T3_value, T3_expected, "T3 is not correct - should be taken from packageenv")
+            T3_N_value = os.environ.get('T3_N_EXP','None')
+            T3_N_expected = 'None'
+            self.assertEqual(T3_N_value, T3_N_expected, "T3_N_EXP is not correct - should be undefined due to export = False")
             
         def test_L1_2_3_Package_value(self):
             #T2 - Test for setting env variable in .projectenv locally with override False
