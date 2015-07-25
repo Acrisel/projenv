@@ -10,6 +10,7 @@ from collections import OrderedDict
 from xml.dom import minidom
 from namedlist import namedlist
 import logging
+from copy import copy, deepcopy
 
 logger=logging.getLogger(__name__)
 
@@ -212,7 +213,9 @@ class Environ(object):
             raise
         return var.value
     
+    ''' TODO: allow other type by adding cast according to its type '''
     def __setitem__(self, key, value):
+        assert isinstance(value, EnvVar), 'Illegal value {} provided; must be EnvVar' 
         self.environ[key]=value
         
     def keys(self):
@@ -600,12 +603,35 @@ class Environ(object):
                         value=str(value)
                     os.environ[other_var.name]=value
         return self
-            
-    def dup_env(self):
-        env={}
+
+    def __copy__(self):
+        env=Environ()
         for name, var in self.environ.items():
-            env[name]=var.value
+            v=var.__asdict()
+            v[value]=copy(var.value)
+            env[name]=EnvVar(**var._asdict()) #.value
         return env
+            
+    def __deepcopy__(self, memo):
+        env=Environ()
+        for name, var in self.environ.items():
+            v=var._asdict()
+            v['value']=deepcopy(var.value, memo)
+            env[name]=EnvVar(**var._asdict()) #.value
+        return env
+    
+    def _asdict(self):
+        env=OrderedDict()
+        for name, var in self.environ.items():
+            env[name]=copy(var.value)
+        return env
+        
+            
+    #def dup_env(self):
+    #    env=Environ()
+    #    for name, var in self.environ.items():
+    #        env[name]=EnvVar(**var._asdict()) #.value
+    #    return env
         
     def log_env(self, log=None):
         mylog=print if log is None else log
