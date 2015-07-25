@@ -11,5 +11,15 @@
                    cast='expr' export='True' override='True'>
 import os
 result=os.listdir("${HOME}")</var>
+
+
+    <var name='BInt' value='3' cast='literal' export='True' override='True'/>  
+    <var name='BFloat' value='3.4' cast='literal' export='True' override='True'/>  
+    <var name='BList' value='[3,4,]' cast='literal' export='True' override='True'/>  
+    <var name='BDict' value='{3:4}' cast='literal' export='True' override='True'/>  
+    <var name='BNone' value='None' cast='literal' export='True' override='True'/>  
+    <var name='BTuple' value='(3,4,)' cast='literal' export='True' override='True'/>  
+    <var name='BBool' value='False' cast='literal' export='True' override='True'/>  
+    
   </environ>
 </environment>
