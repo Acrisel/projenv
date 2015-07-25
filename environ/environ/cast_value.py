@@ -8,24 +8,30 @@ from datetime import datetime
 import dateutil
 import json
 from decimal import Decimal
+import ast
 
+'''
 def cast_integer(value, *args, **kwargs):
     return int(value)
 
 def cast_float(value, *args, **kwargs):
     return float(value)
-
+'''
 def cast_decimal(value, *args, **kwargs):
     return Decimal(value)
 
 def cast_string(value, *args, **kwargs):
     return str(value)
 
+'''
 def cast_boolean(value, *args, **kwargs):
     return json.loads(value.lower())
+    '''
 
+'''
 def cast_list(value, *args, **kwargs):
     return json.loads(value)
+    '''
 
 def cast_object(value, *args, **kwargs):
     return value
@@ -63,19 +69,27 @@ def cast_expr(value, *args, **kwargs):
     result=namespace['result']
     return result
 
+def cast_literal(value, *args, **kwargs):
+    try:
+        result=ast.literal_eval(value)
+    except Exception as e:
+        raise CastError('Failed to convert literal value: {}; {}'.format(value), repr(e))
+    return result
+
 def cast_eval(value, *args, **kwargs):
     result=eval(value)
     return result
 
-castly={'integer':cast_integer,
-        'float':cast_float,
+castly={'integer':cast_literal, #cast_integer,
+        'float':cast_literal, #cast_float,
         'decimal':cast_decimal,
         'string':cast_string,
-        'boolean':cast_boolean,
-        'list':cast_list,
+        'boolean':cast_literal, #cast_boolean,
+        'list':cast_literal, #cast_list,
         'object':cast_object,
         'datetime':cast_datetime,
         'path':cast_path,
+        'literal':cast_literal,
         'expr':cast_expr,
         'eval':cast_eval,}
 

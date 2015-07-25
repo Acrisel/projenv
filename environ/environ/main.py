@@ -11,6 +11,7 @@ from xml.dom import minidom
 from namedlist import namedlist
 import logging
 from copy import copy, deepcopy
+import ast
 
 logger=logging.getLogger(__name__)
 
@@ -361,7 +362,7 @@ class Environ(object):
                                      .format(name, override.value, override.origin))
         else:
             if current.override:
-                override.origin=current.origin + ',' + override.origin
+                override.origin=str(current.override) + ',' + override.origin
                 source_map[name]=override
                 if self.trace_env:
                     if isinstance(self.trace_env, list):
@@ -372,7 +373,8 @@ class Environ(object):
             else:
                 msg='Trying to override {}; source {}; offender {};'\
                     .format(name, current.origin, override.origin)
-                raise EnvironError(msg)
+                self.logger.critical(msg)
+                raise EnvironError('Trying to override variable that is not set to allow override')
     
     def __update_env_map(self, source_map, override_map):
         ''' Update source_map with vars from override_map.  
@@ -388,7 +390,24 @@ class Environ(object):
                         .format(var.cast, var.name, var.origin)  
                     raise EnvironError(msg)                 
         else:
-            source_map.update(override_map)         
+            source_map.update(override_map) 
+            
+    def __mk_env_var(self, attrib):
+        var=EnvVar(**attrib)
+        if isinstance(var.export, str) :
+            try:
+                var.export=ast.literal_eval(var.export)
+            except Exception:
+                self.logger.critical('Wrong export flag value: {}; must be True of False.'.format(var.export))
+                raise EnvironError('Bad value in export flag for {}; must be True of False'.format(var.name))
+        if isinstance(var.override, str) :
+            try:
+                var.override=ast.literal_eval(var.override)
+            except Exception:
+                self.logger.critical('Wrong override flag value: {}; must be True of False.'.format(var.override))
+                raise EnvironError('Bad value in override flag for {}; must be True of False'.format(var.name))
+        return var
+        
     
     def __make_node_schema(self, node_files):
         ''' Builds environment dictionary out of node_files.
@@ -409,7 +428,12 @@ class Environ(object):
                     attrib=child.attrib
                     if 'value' not in attrib.keys():
                         attrib['value'] = child.text
-                    var=EnvVar(**attrib)
+                    var=self.__mk_env_var(attrib)
+                    if isinstance(var.export, str) :
+                        var.export=ast.literal_eval(var.export)
+                    if isinstance(var.override, str) :
+                        var.override=ast.literal_eval(var.override)
+                    
                     var.origin=file
                     self.__update_var(source_map=env_map, override=var) 
                         
@@ -503,13 +527,15 @@ class Environ(object):
             tag=child.tag.lower()
             if tag == 'var':
                 attrib=child.attrib
-                try:
-                    cast=attrib['cast']
-                except KeyError:
-                    var=EnvVar(**attrib)
-                else:
-                    adjusted_attrib=dict(filter(lambda x: x[0] != 'cast', attrib.items()))
-                    var=EnvVar(cast=cast, **adjusted_attrib)
+                #try:
+                #    cast=attrib['cast']
+                #except KeyError:
+                #    var=self.__mk_env_var(attrib)
+                #else:
+                #    adjusted_attrib=dict(filter(lambda x: x[0] != 'cast', attrib.items()))
+                #    adjusted_attrib['cast']=cast
+                #    var=self.__mk_env_var(adjusted_attrib)
+                var=self.__mk_env_var(attrib)
                 env_map[var.name]=var
                 ''' rest will be set with unused attributes '''
                 var.rest=OrderedDict(set(attrib.items())-set(var._asdict().items()))
@@ -608,7 +634,7 @@ class Environ(object):
         env=Environ()
         for name, var in self.environ.items():
             v=var.__asdict()
-            v[value]=copy(var.value)
+            v['value']=copy(var.value)
             env[name]=EnvVar(**var._asdict()) #.value
         return env
             
@@ -625,14 +651,7 @@ class Environ(object):
         for name, var in self.environ.items():
             env[name]=copy(var.value)
         return env
-        
-            
-    #def dup_env(self):
-    #    env=Environ()
-    #    for name, var in self.environ.items():
-    #        env[name]=EnvVar(**var._asdict()) #.value
-    #    return env
-        
+                
     def log_env(self, log=None):
         mylog=print if log is None else log
         msg=map(lambda x: '{k}={v}'.format(k=x, v=self.environ[x].value), 
