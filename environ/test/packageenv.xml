@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <environment>
   <environ>
+    <!-- Logging controls -->
+    <var name='AC_LOG_LEVEL' value='DEBUG' override='True' export='True'/>
+    <var name='AC_LOG_STDOUT' value='False' override='True' export='True' cast='boolean'/>
+    <var name='AC_LOG_STDOUT_LEVEL' value='INFO' override='True' export='True'/>
+    <var name='AC_LOG_STDERR' value='True' override='True' export='True' cast='boolean'/>
+    <var name='AC_LOG_STDERR_LEVEL' value='WARNING' override='True' export='True'/>
     <var name='E1' value='19' export='True' override='True'/>
     <var name='A1' value='${E1}' export='True' override='True'/> 
     <var name='E2' value='29' export='True' override='True'/>
     <var name='A2' value='${E2}' export='True' override='True'/>
+    <var name='U1' value='30' export='False' override='No'/>
   </environ>
 </environment>
