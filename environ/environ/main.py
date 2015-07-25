@@ -373,7 +373,8 @@ class Environ(object):
             else:
                 msg='Trying to override {}; source {}; offender {};'\
                     .format(name, current.origin, override.origin)
-                raise EnvironError(msg)
+                self.logger.critical(msg)
+                raise EnvironError('Trying to override variable that is not set to allow override')
     
     def __update_env_map(self, source_map, override_map):
         ''' Update source_map with vars from override_map.  
@@ -394,9 +395,17 @@ class Environ(object):
     def __mk_env_var(self, attrib):
         var=EnvVar(**attrib)
         if isinstance(var.export, str) :
-            var.export=ast.literal_eval(var.export)
+            try:
+                var.export=ast.literal_eval(var.export)
+            except Exception:
+                self.logger.critical('Wrong export flag value: {}; must be True of False.'.format(var.export))
+                raise EnvironError('Bad value in export flag for {}; must be True of False'.format(var.name))
         if isinstance(var.override, str) :
-            var.override=ast.literal_eval(var.override)
+            try:
+                var.override=ast.literal_eval(var.override)
+            except Exception:
+                self.logger.critical('Wrong override flag value: {}; must be True of False.'.format(var.override))
+                raise EnvironError('Bad value in override flag for {}; must be True of False'.format(var.name))
         return var
         
     
