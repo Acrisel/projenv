@@ -15,7 +15,9 @@ if x is 'None':
     ##os.environ['HOME'] = os.environ.get('USERPROFILE','None')
     os.environ['HOME'] = str('C:/Users/uri')
     
-logger=logging.getLogger(__name__)
+
+
+logger=logging.getLogger('Example')
 
 handler = logging.StreamHandler()
 formatter = logging.Formatter(
@@ -24,9 +26,14 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 
+    
 root_loc=os.path.dirname(__file__)
 module_loc=os.path.join(root_loc, 'envexample', 'lvl1', 'lvl2', 'lvl3')
-module_env=Environ(osenv=True, trace_env=['A1', 'B1', 'C1'], ulogger=logger)
+module_env=Environ(osenv=True, trace_env=['A1', 'B1', 'C1'], logclass='Example') #, ulogger=logger)
 module_env.loads(path=module_loc)
 
 print('POST ENVIRON:', repr(module_env))
+
+import pickle
+
+pickle.dumps(module_env)
