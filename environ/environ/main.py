@@ -12,6 +12,7 @@ from namedlist import namedlist
 import logging
 from copy import copy, deepcopy
 import ast
+from logging import getLogger
 
 logger=logging.getLogger(__name__)
 
@@ -107,6 +108,125 @@ def advise_project_loc(path=None, mark=None):
     else:
         return (None, None)
     
+def file2string(file):
+    with open(file, 'r') as f:
+        content=f.read()
+    return content
+
+def _get_root_env(file, enclosure):
+    xmltext=file2string(file)
+    xmldoc = minidom.parseString(xmltext)
+    
+    # TODO: this assumes only single entry of environ in XML.  
+    env_root=xmldoc.getElementsByTagName(enclosure)[0] #self.__config.xmlenclosure)[0] 
+            
+    return env_root
+
+def _get_available_env_files(path, projectenv, packageenv, personaleenv):
+    ''' get environments files starting from path.
+        adds list of import files and convert them to environment schema '''
+    node_files=_EnvNode()
+    if path is not None:
+        sys_env_file = os.path.join(path,projectenv)
+        if  os.path.isfile(sys_env_file):
+            node_files.project=sys_env_file
+        prj_env_file = os.path.join(path, packageenv)
+        if  os.path.isfile(prj_env_file):
+            node_files.package=prj_env_file
+        lcl_env_file = os.path.join(path, personaleenv)
+        if  os.path.isfile(lcl_env_file):
+            node_files.personal=lcl_env_file
+        #self.logger.debug('Found node schema: \n\t{}'.format(repr(node_files)))
+        
+    return node_files
+
+def _mk_env_var(attrib): # logger):
+    var=EnvVar(**attrib)
+    if isinstance(var.export, str) :
+        try:
+            var.export=ast.literal_eval(var.export)
+        except Exception:
+            logger.critical('Wrong export flag value: {}; must be True of False.'.format(var.export))
+            raise EnvironError('Bad value in export flag for {}; must be True of False'.format(var.name))
+    if isinstance(var.override, str) :
+        try:
+            var.override=ast.literal_eval(var.override)
+        except Exception:
+            logger.critical('Wrong override flag value: {}; must be True of False.'.format(var.override))
+            raise EnvironError('Bad value in override flag for {}; must be True of False'.format(var.name))
+    return var
+
+def _update_var(source_map, override, trace_env): #, logger):
+    ''' Update surce_map with override env variable.
+    Consider its override quality before doing so. '''
+    name=override.name
+    try: 
+        current=source_map[name]
+    except KeyError:
+        source_map[name]=override
+        if trace_env:
+            if isinstance(trace_env, list):
+                if name in trace_env or not trace_env:
+                    logger.debug('\tEnvtrace: ({}):\n\tinitial: {} @ {}'\
+                                 .format(name, override.value, override.origin))
+    else:
+        if current.override:
+            override.origin=str(current.override) + ',' + override.origin
+            source_map[name]=override
+            if trace_env:
+                if isinstance(trace_env, list):
+                    if name in trace_env or not trace_env:
+                        logger.debug('\tEnvtrace: ({}):\n\tcurrent: {} @ {}\n\toverride: {} @ {}'\
+                                     .format(name, current.value, current.origin,
+                                             override.value, override.origin))
+        else:
+            msg='Trying to override {}; source {}; offender {};'\
+                .format(name, current.origin, override.origin)
+            logger.critical(msg)
+            raise EnvironError('Trying to override variable that is not set to allow override')
+
+def _make_node_schema(node_files, enclosure, trace_env): #, logger):
+    ''' Builds environment dictionary out of node_files.
+    personal overrides package which overrides project environment.
+    
+    Args:
+        node_files: EnvNode structure project, package, and personal.
+    '''
+    env_map=OrderedDict()
+    files=filter(lambda f: f is not None, 
+                 [node_files.project, node_files.package, node_files.personal])
+    for file in files:
+        logger.debug('Loading schema: {}'.format(file))
+        root=_get_root_env(file, enclosure=enclosure)
+        for child in root.childNodes: 
+            if child.nodeType != child.ELEMENT_NODE:
+                continue
+            tag=child.nodeName.lower()
+            if child.attributes is None:
+                print('No attributes: ', child.nodeName)
+            attrib=OrderedDict(child.attributes.items()) 
+            if tag == 'var':
+                if 'value' not in attrib.keys():
+                    value=None
+                    if child.firstChild is not None:
+                        value=child.firstChild.nodeValue
+                    attrib['value'] = value 
+                var=_mk_env_var(attrib,)
+                if isinstance(var.export, str) :
+                    var.export=ast.literal_eval(var.export)
+                if isinstance(var.override, str) :
+                    var.override=ast.literal_eval(var.override)
+                
+                var.origin=file
+                _update_var(source_map=env_map, override=var, trace_env=trace_env, ) 
+                    
+                ''' rest will be set with unused attributes '''
+                var.rest=OrderedDict(set(attrib.items())-set(var._asdict().items()))
+            elif tag == 'import':
+                var=EnvImport(**attrib)
+                env_map[var.name]=var 
+        root=None    
+    return env_map
 '''
     End definition of utilities
 '''
@@ -126,7 +246,7 @@ class Environ(object):
             once removed, cannot be added back by derivative environments.
             '''
     
-    def __init__(self, osenv=True, configure=None, trace_env=None, ulogger=None):
+    def __init__(self, osenv=True, configure=None, trace_env=None, logclass=None): #, ulogger=None):
         ''' Instantiates Environ object by setting its internal dictionary. 
         Args:
             osenv: if True, inherit os.environ
@@ -142,10 +262,13 @@ class Environ(object):
         '''
         
         self.trace_env=trace_env
-        if ulogger:
-            self.logger=ulogger.getChild(__name__)
-        else:
-            self.logger=logger
+        if logclass:
+            global logger
+            logger=logging.getLogger('.'.join([logclass, type(self).__name__]))
+        #if ulogger:
+        #    self.logger=ulogger.getChild(__name__)
+        #else:
+        #    self.logger=logger
             
         self.__config=Configure()
         if configure:
@@ -235,14 +358,8 @@ class Environ(object):
             value=var.value
         else:
             value=None
-        return value   
-    
-    def __get_root_env(self, file):
-        tree=etree.parse(file)
-        root=tree.getroot()
-        env_root=root.find(self.__config.xmlenclosure)
-        return env_root
-    
+        return value                     
+
     def __eval_env_schema_bottom_up(self, env_schema):
         ''' evaluate schema; 
             1. converts vars into self.environ 
@@ -280,7 +397,7 @@ class Environ(object):
                 if self.trace_env:
                     if isinstance(self.trace_env, list):
                         if envvar.name in self.trace_env or not self.trace_env:
-                            self.logger.debug('\tEnvtrace: eval ({}): {}'\
+                            logger.debug('\tEnvtrace: eval ({}): {}'\
                                               .format(envvar.name, envvar.value))
        
             else:
@@ -320,7 +437,7 @@ class Environ(object):
             if self.trace_env:
                 if isinstance(self.trace_env, list):
                     if envvar.name in self.trace_env or not self.trace_env:
-                        self.logger.debug('\tEnvtrace: eval ({}): {}'\
+                        logger.debug('\tEnvtrace: eval ({}): {}'\
                                           .format(envvar.name, envvar.value))
             
         
@@ -332,49 +449,15 @@ class Environ(object):
     def __get_env_node(self, path):
         ''' get environments files starting from path.
             adds list of import files and convert them to environment schema '''
-        node_files=_EnvNode()
+        #node_files=_EnvNode()
         if path is not None:
-            sys_env_file = os.path.join(path,self.DOTPROJECTENV)
-            if  os.path.isfile(sys_env_file):
-                node_files.project=sys_env_file
-            prj_env_file = os.path.join(path, self.PACKAGEENV)
-            if  os.path.isfile(prj_env_file):
-                node_files.package=prj_env_file
-            lcl_env_file = os.path.join(path, self.PERSONALENV)
-            if  os.path.isfile(lcl_env_file):
-                node_files.personal=lcl_env_file
-            self.logger.debug('Found node schema: \n\t{}'.format(repr(node_files)))
-            node_env=self.__make_node_schema(node_files)
+            node_files=_get_available_env_files(path=path, projectenv=self.DOTPROJECTENV, 
+                                                packageenv=self.PACKAGEENV, 
+                                                personaleenv=self.PERSONALENV)
+            logger.debug('Found node schema: \n\t{}'.format(repr(node_files)))
+            node_env=_make_node_schema(node_files, enclosure=self.__config.xmlenclosure, trace_env=self.trace_env) #, logger=self.logger)
         return node_env
     
-    def __update_var(self, source_map, override):
-        ''' Update surce_map with override env variable.
-        Consider its override quality before doing so. '''
-        name=override.name
-        try: 
-            current=source_map[name]
-        except KeyError:
-            source_map[name]=override
-            if self.trace_env:
-                if isinstance(self.trace_env, list):
-                    if name in self.trace_env or not self.trace_env:
-                        self.logger.debug('\tEnvtrace: ({}):\n\tinitial: {} @ {}'\
-                                     .format(name, override.value, override.origin))
-        else:
-            if current.override:
-                override.origin=str(current.override) + ',' + override.origin
-                source_map[name]=override
-                if self.trace_env:
-                    if isinstance(self.trace_env, list):
-                        if name in self.trace_env or not self.trace_env:
-                            self.logger.debug('\tEnvtrace: ({}):\n\tcurrent: {} @ {}\n\toverride: {} @ {}'\
-                                         .format(name, current.value, current.origin,
-                                                 override.value, override.origin))
-            else:
-                msg='Trying to override {}; source {}; offender {};'\
-                    .format(name, current.origin, override.origin)
-                self.logger.critical(msg)
-                raise EnvironError('Trying to override variable that is not set to allow override')
     
     def __update_env_map(self, source_map, override_map):
         ''' Update source_map with vars from override_map.  
@@ -382,7 +465,7 @@ class Environ(object):
         if len(source_map) >0:
             for name, var in override_map.items():
                 if isinstance(var, EnvVar):
-                    self.__update_var(source_map=source_map, override=var) 
+                    _update_var(source_map=source_map, override=var, trace_env=self.trace_env) #, logger=logger) 
                 elif isinstance(var, EnvImport):
                     source_map[name]=var
                 else:
@@ -391,61 +474,6 @@ class Environ(object):
                     raise EnvironError(msg)                 
         else:
             source_map.update(override_map) 
-            
-    def __mk_env_var(self, attrib):
-        var=EnvVar(**attrib)
-        if isinstance(var.export, str) :
-            try:
-                var.export=ast.literal_eval(var.export)
-            except Exception:
-                self.logger.critical('Wrong export flag value: {}; must be True of False.'.format(var.export))
-                raise EnvironError('Bad value in export flag for {}; must be True of False'.format(var.name))
-        if isinstance(var.override, str) :
-            try:
-                var.override=ast.literal_eval(var.override)
-            except Exception:
-                self.logger.critical('Wrong override flag value: {}; must be True of False.'.format(var.override))
-                raise EnvironError('Bad value in override flag for {}; must be True of False'.format(var.name))
-        return var
-        
-    
-    def __make_node_schema(self, node_files):
-        ''' Builds environment dictionary out of node_files.
-        personal overrides package which overrides project environment.
-        
-        Args:
-            node_files: EnvNode structure project, package, and personal.
-        '''
-        env_map=OrderedDict()
-        files=filter(lambda f: f is not None, 
-                     [node_files.project, node_files.package, node_files.personal])
-        for file in files:
-            self.logger.debug('Loading schema: {}'.format(file))
-            root=self.__get_root_env(file)
-            for child in root:
-                tag=child.tag.lower()
-                if tag == 'var':
-                    attrib=child.attrib
-                    if 'value' not in attrib.keys():
-                        attrib['value'] = child.text
-                    var=self.__mk_env_var(attrib)
-                    if isinstance(var.export, str) :
-                        var.export=ast.literal_eval(var.export)
-                    if isinstance(var.override, str) :
-                        var.override=ast.literal_eval(var.override)
-                    
-                    var.origin=file
-                    self.__update_var(source_map=env_map, override=var) 
-                        
-                    ''' rest will be set with unused attributes '''
-                    var.rest=OrderedDict(set(attrib.items())-set(var._asdict().items()))
-                elif tag == 'import':
-                    attrib=child.attrib
-                    var=EnvImport(**attrib)
-                    env_map[var.name]=var  
-        #printly=[k for k,v in env_map.items()]
-        #print('env_map ({}): \n\t{}'.format(node_files, printly))         
-        return env_map
                
     def __get_env_path(self, path):
         ''' Gets the environment schema representing Path.
@@ -455,7 +483,7 @@ class Environ(object):
         mark=self.DOTPROJECTENV
         
         path=expandvars(path, environ=self)
-        self.logger.debug('Evaluating file: {}'.format(path))
+        logger.debug('Evaluating file: {}'.format(path))
         
         env_nodes=list()
         if not pathhasvars(path):
@@ -499,9 +527,11 @@ class Environ(object):
                 env_path[name]=var
             else: # this is import
                 if var.path:
+                    # by path - load from path
                     path=expandvars(var.path, self)
                     path=os.path.abspath(path)
                 else:
+                    # by name - find package location to import it environment
                     import importlib
                     package=importlib.import_module(var.name)
                     if package:
@@ -510,44 +540,19 @@ class Environ(object):
                             path=path[0]
                     else:
                         msg='Cannot find {} to import; please make sure it is on PYTHONPATH or add path attribute'.format(path)
-                        self.logger.critical(msg)
+                        logger.critical(msg)
                         raise EnvironError(msg)
-                self.logger.debug('Importing environment: {}'.format(path))
+                logger.debug('Importing environment: {}'.format(path))
                 if pathhasvars(path):
                     raise EnvironError('Trying to import named {} with unresolved path: {}'.format(name, path))
                 env_import=self.__get_env_path(path)
                 self.__update_env_map(env_path, env_import) 
                 
         return env_path
-    
-    def __get_env_map(self, root):
-        env_map=OrderedDict()
-        import_map=OrderedDict()
-        for child in root:
-            tag=child.tag.lower()
-            if tag == 'var':
-                attrib=child.attrib
-                #try:
-                #    cast=attrib['cast']
-                #except KeyError:
-                #    var=self.__mk_env_var(attrib)
-                #else:
-                #    adjusted_attrib=dict(filter(lambda x: x[0] != 'cast', attrib.items()))
-                #    adjusted_attrib['cast']=cast
-                #    var=self.__mk_env_var(adjusted_attrib)
-                var=self.__mk_env_var(attrib)
-                env_map[var.name]=var
-                ''' rest will be set with unused attributes '''
-                var.rest=OrderedDict(set(attrib.items())-set(var._asdict().items()))
-            elif tag == 'import':
-                var=EnvImport(**child.attrib)
-                import_map[var.name]=var
-            
-        return import_map, env_map
-    
+        
     @classmethod
     def cmd_line_env(cls, env):
-        environ=Environ(osenv=False)#.loads(envtree=False)
+        environ=Environ(osenv=False)
         if env is not None:
             for item in env:
                 parts=item.split('=')
@@ -666,6 +671,7 @@ class Environ(object):
                           var.items()))
         return OrderedDict(clean)
         
+    
     def __xml_repr(self, root=None):
         if root is not None:
             env=etree.SubElement(root, self.__config.xmlenclosure)
@@ -693,12 +699,9 @@ class Environ(object):
         rough_string = etree.tostring(xml, 'utf-8')
         reparsed = minidom.parseString(rough_string)
         return reparsed.toprettyxml(indent="  ")
-
+    
     def dumps(self, env_file=None):
-        ''' writes environ structre into file. 
-        
-        Args:
-            env_file: file to which file be written. '''
+         
         xml=etree.Element('{http://www.w3.org/2005/Atom}feed',
                           attrib={'{http://www.w3.org/XML/1998/namespace}lang': 'en'})
         env=etree.SubElement(xml, 'environment')
@@ -708,7 +711,7 @@ class Environ(object):
             et.write(env_file) 
         else:
             return xml
-            
+               
     def __print_schema(self, schema):
         for n, v in schema.items():
             print('{}={}'.format(n,v))  
