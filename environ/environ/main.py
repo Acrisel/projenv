@@ -262,9 +262,11 @@ class Environ(object):
         '''
         
         self.trace_env=trace_env
+        self.logclass = None
         if logclass:
             global logger
-            logger=logging.getLogger('.'.join([logclass, type(self).__name__]))
+            self.logclass = '.'.join([logclass, type(self).__name__])
+            logger=logging.getLogger(self.logclass)
         #if ulogger:
         #    self.logger=ulogger.getChild(__name__)
         #else:
@@ -382,7 +384,7 @@ class Environ(object):
                     envvar.rest['value']=envvar.value
                     try:
                         envvar.value=cast_value(target_type=envvar.cast,
-                                                attrib=envvar.rest)
+                                                attrib=envvar.rest,logclass=self.logclass)
                         envvar.rest=None
                     except KeyError:
                         msg='Unknown cast: {}; varname {}; origin: {}'\
@@ -425,7 +427,7 @@ class Environ(object):
                 envvar.rest['value']=envvar.value
                 try:
                     envvar.value=cast_value(target_type=envvar.cast,
-                                            attrib=envvar.rest)
+                                            attrib=envvar.rest,logclass=self.logclass)
                     envvar.rest=None
                 except KeyError:
                     msg='Unknown cast: {}; varname {}; origin: {}'\
