@@ -55,7 +55,7 @@ class EnvironError(Exception):
 DOTPROJECTENV='.projectenv'
 PACKAGEENV='packageenv'
 PERSONALENV='personalenv'
-ENVTAG='packageenv'
+ENVTAG='environ'
 
 Configure=namedlist('Configure', 
                     [('projectfile', DOTPROJECTENV),
@@ -117,7 +117,7 @@ def _get_root_env(file, enclosure):
     xmltext=file2string(file)
     xmldoc = minidom.parseString(xmltext)
     
-    # TODO: this assumes only single entry of packageenv in XML.  
+    # TODO: this assumes only single entry of environ in XML.  
     env_root=xmldoc.getElementsByTagName(enclosure)[0] #self.__config.xmlenclosure)[0] 
             
     return env_root
@@ -249,16 +249,16 @@ class Environ(object):
     def __init__(self, osenv=True, configure=None, trace_env=None, logclass=None): #, ulogger=None):
         ''' Instantiates Environ object by setting its internal dictionary. 
         Args:
-            osenv: if True, inherit os.packageenv
+            osenv: if True, inherit os.environ
             
             configure: dict of name override to default setting:
                {'.projectenv':'.projectenv',
                 'packageenv':'packageenv',
                 'personalenv':'personalenv',
-                'xmlenclosure':'packageenv'}
+                'xmlenclosure':'environ'}
                 
         Returns: Environ object filled according to tree environment settings.
-        Access packageenv dictionary directly by its attribute packageenv.
+        Access environ dictionary directly by its attribute environ.
         '''
         
         self.trace_env=trace_env
@@ -305,7 +305,7 @@ class Environ(object):
             envtree: if set will attempt to load environment tree from root location to path
                 
         Returns: Environ object filled according to tree environment settings.
-        Access packageenv dictionary directly by its attribute packageenv.
+        Access environ dictionary directly by its attribute environ.
         '''
         
         if path:
@@ -364,7 +364,7 @@ class Environ(object):
 
     def __eval_env_schema_bottom_up(self, env_schema):
         ''' evaluate schema; 
-            1. converts vars into self.packageenv 
+            1. converts vars into self.environ 
             2. converts imports to evaluated schemas
             
         Args:
@@ -378,7 +378,7 @@ class Environ(object):
                 if envvar.cast is not None and envvar.cast != 'string' and isinstance(envvar.value, str):
                     ''' TODO: check why sub fields cannot be variables '''
                     #vardict=var._asdict()
-                    #envvar.rest=dict([(n,expandvars(source=v,packageenv=self)) \
+                    #envvar.rest=dict([(n,expandvars(source=v,environ=self)) \
                     #                  for n,v in vardict.items()])
                     
                     envvar.rest['value']=envvar.value
@@ -421,7 +421,7 @@ class Environ(object):
             if envvar.cast is not None and envvar.cast != 'string' and isinstance(envvar.value, str):
                 ''' TODO: check why sub fields cannot be variables '''
                 vardict=envvar._asdict()
-                #envvar.rest=dict([(n,expandvars(source=v,packageenv=self)) \
+                #envvar.rest=dict([(n,expandvars(source=v,environ=self)) \
                 #                  for n,v in vardict.items()])
                 envvar.rest=vardict
                 envvar.rest['value']=envvar.value
@@ -578,8 +578,8 @@ class Environ(object):
         return new_var if new_var is not None else var          
             
     def update_env(self, input_environ, force_override=False, prefix_replace=None, prefix_add=None, prefix_exclusicve=True): 
-        ''' Update override-able packageenv with values from overrides
-            plus adding new vars into packageenv. 
+        ''' Update override-able environ with values from overrides
+            plus adding new vars into environ. 
             The host environment can have two type of parameters.
             1. Regular
             2. Overrideable 
@@ -599,7 +599,7 @@ class Environ(object):
             from_prefix into to_prefix
             
             If prefix_add is provided, it is expected to be a string that would be added as prefix 
-            to given packageenv variable names.
+            to given environ variable names.
             
             prefix_exclusive direct the behavior in case both replace is applicable.  When True, 
             prefix_add will be be done only is prefix_replace is not applicable.
@@ -731,7 +731,7 @@ class Environ(object):
             print('{}={}'.format(n,v))  
 
     def __repr__(self):
-        txt='packageenv: {\n' #'Environ Begin:\n'
+        txt='environ: {\n' #'Environ Begin:\n'
         body=[]
         for key in sorted(self.environ.keys()):
             body.append('\t({key}={value})'.format(key=key, value=self.environ[key].value))

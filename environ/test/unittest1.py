@@ -3,8 +3,8 @@ Created on Apr 26, 2015
 
 @author: uri
 '''
-from environ  import Environ
-from environ import EnvVar
+from packageenv  import Environ
+from packageenv import EnvVar
 import os.path
 
 

@@ -10,7 +10,7 @@ import os.path
 import os
 from string import Template
 
-from .mkproj import mk_ac_env_name, get_personalenv_template, get_accord_loc
+from packageenv import mk_ac_env_name, get_personalenv_template, get_accord_loc
 
 def abort(msg):
     print(msg)

@@ -12,7 +12,7 @@ import logging
 x = os.environ.get('HOME','None')
 
 if x is 'None':
-    ##os.packageenv['HOME'] = os.packageenv.get('USERPROFILE','None')
+    ##os.environ['HOME'] = os.environ.get('USERPROFILE','None')
     os.environ['HOME'] = str('C:/Users/uri')
     
 
