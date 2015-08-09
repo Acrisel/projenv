@@ -621,13 +621,12 @@ class Environ(object):
                     ''' if not found in existing Environ - just update Environ '''
                     if isinstance(input_var.value, str):
                         input_var.value=expandvars(input_var.value, self)
-                    origin_var=self.environ[input_var.name]
                     self.environ[input_var.name]=input_var
                     if self.trace_env:
                         if isinstance(self.trace_env, list):
                             if input_var.name in self.trace_env or not self.trace_env:
-                                logger.debug('\tEnvtrace: ({}):\n\toverwrite by update function: {} @ {}'\
-                                             .format(input_var.name, input_var.value, origin_var.value))
+                                logger.debug('\tEnvtrace: ({}):\n\tnew by update function: {}'\
+                                             .format(input_var.name, input_var.value,))
                 else:
                     ''' if in Environ, override only if defined as such. '''
                     if self_var.override and not input_var.input or force_override:
