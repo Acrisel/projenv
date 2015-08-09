@@ -15,5 +15,7 @@
     <var name='U1' value='30' export='False' override='True'/>
     <var name='T3' value='T3_PACK_LOC' export='True' override='True'/>
     <var name='T3_N_EXP' value='PACK_LOC_T3_N_EXP' export='False' override='True'/>
+    <var name='T18_input' value='3' cast='literal' export='True' override='True'/>
+    <var name='T19_input' value='10' cast='literal' export='True' override='True'/>
   </environ>
 </environment>

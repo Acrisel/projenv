@@ -4,6 +4,7 @@ Created on Apr 26, 2015
 @author: uri
 '''
 from environ  import Environ
+from environ import EnvVar
 import os.path
 
 
@@ -27,9 +28,9 @@ if __name__ == '__main__':
     module_loc=os.path.join(root_loc,'lvl1', 'lvl2', 'lvl3')
     
     #TODO: Move to Test case by using assertRaises
-    module_env=Environ(osenv=True,trace_env=['T1','T2','T3','T3_N_EXP','T4','T5','T6','T7','T8','T9','T10'], logclass="Unit_test")
+    module_env=Environ(osenv=True,trace_env=['T1','T18_input'], logclass="Unit_test")
     module_env.loads(path=module_loc)
-    print('POST ENVIRON:', repr(module_env))
+    #print('POST ENVIRON:', repr(module_env))
     
     class TestEnviron(unittest.TestCase):
         def test_Dot_Projectenv_value(self):
@@ -135,4 +136,28 @@ if __name__ == '__main__':
             self.assertTrue(T16_tuple, "T16 is not tuple")
             self.assertEqual(T17_value, T17_expected, "T17_bool value should be False")
             self.assertTrue(T17_bool, "T17 is not boolena")
+        
+        def test_input_variable(self):
+            #T18 - Test for input variable
+            # If input=False expect to over-write original setting (if exists) or define variable
+            # If input=True expect not to over-write original setting (if exists) or define variable
+            
+            input_env = [EnvVar(name='T18_input', cast='integer', value =5, input= False)]
+            T18_value = module_env.get('T18_input')
+            T18_expected = 3
+            self.assertEqual(T18_value, T18_expected, "T18 is not correct - should be taken from packageenv of the main env")
+            module_env.update_env(input_env)
+            T18_value = module_env.get('T18_input')
+            T18_expected = 5
+            self.assertEqual(T18_value, T18_expected, "T18 is not correct - should be updated by value in input_env")
+            
+            input_env = [EnvVar(name='T19_input', cast='integer', value =15, input= True)]
+            T19_value = module_env.get('T19_input')
+            T19_expected = 10
+            self.assertEqual(T19_value, T19_expected, "T19 is not correct - should be taken from packageenv of the main env")
+            module_env.update_env(input_env)
+            T19_value = module_env.get('T19_input')
+            T19_expected = 10
+            self.assertEqual(T19_value, T19_expected, "T19 is not correct - should not be updated by value in input_env")
+                     
 unittest.main()
