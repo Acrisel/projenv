@@ -577,7 +577,7 @@ class Environ(object):
                 var.name=prefix_add+var.name
         return new_var if new_var is not None else var          
             
-    def update_env(self, environ, force_override=False, prefix_replace=None, prefix_add=None, prefix_exclusicve=True): 
+    def update_env(self, input_environ, force_override=False, prefix_replace=None, prefix_add=None, prefix_exclusicve=True): 
         ''' Update override-able environ with values from overrides
             plus adding new vars into environ. 
             The host environment can have two type of parameters.
@@ -604,37 +604,37 @@ class Environ(object):
             prefix_exclusive direct the behavior in case both replace is applicable.  When True, 
             prefix_add will be be done only is prefix_replace is not applicable.
             '''
-        if environ is not None:
-            env_type=type(environ)
+        if input_environ is not None:
+            env_type=type(input_environ)
             if env_type is list:
-                items=environ
+                input_items=input_environ
             elif env_type is OrderedDict or env_type is dict:
-                items=environ.values()
+                input_items=input_environ.values()
             else:
-                items=list()
+                input_items=list()
             
-            for var in items:
-                other_var=self.__make_var(var, prefix_replace=None, prefix_add=None, prefix_exclusicve=True)
+            for var in input_items:
+                input_var=self.__make_var(var, prefix_replace=None, prefix_add=None, prefix_exclusicve=True)
                 try:
-                    self_var=self.environ[other_var.name]
+                    self_var=self.environ[input_var.name]
                 except KeyError:
                     ''' if not found in existing Environ - just update Environ '''
-                    if isinstance(other_var.value, str):
-                        other_var.value=expandvars(other_var.value, self)
-                    self.environ[other_var.name]=other_var
+                    if isinstance(input_var.value, str):
+                        input_var.value=expandvars(input_var.value, self)
+                    self.environ[input_var.name]=input_var
                 else:
                     ''' if in Environ, override only if defined as such. '''
-                    if self_var.override and not other_var.input or force_override:
-                        if isinstance(other_var.value, str):
-                            other_var.value=expandvars(other_var.value, self)
-                        self.environ[other_var.name]=other_var
+                    if self_var.override and not input_var.input or force_override:
+                        if isinstance(input_var.value, str):
+                            input_var.value=expandvars(input_var.value, self)
+                        self.environ[input_var.name]=input_var
                         
                 ''' Export to process' Environ if defined as such '''
-                if other_var.export:
-                    value=other_var.value
+                if input_var.export:
+                    value=input_var.value
                     if not isinstance(value, str):
                         value=str(value)
-                    os.environ[other_var.name]=value
+                    os.environ[input_var.name]=value
         return self
 
     def __copy__(self):
