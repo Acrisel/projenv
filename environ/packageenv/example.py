@@ -4,7 +4,7 @@ Created on Jun 15, 2015
 @author: arnon
 '''
 
-from environ import Environ
+from packageenv import Environ
 import os.path
 import logging
 
