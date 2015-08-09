@@ -9,7 +9,10 @@ import dateutil
 import json
 from decimal import Decimal
 import ast
+from symbol import except_clause
+import logging
 
+logger=logging.getLogger(__name__)
 '''
 def cast_integer(value, *args, **kwargs):
     return int(value)
@@ -64,8 +67,20 @@ def cast_expr(value, *args, **kwargs):
     namespace = {}
     value=r'%s' % value
     value=value.replace('\\n', '\n')
-    code=compile(value, '<string>', 'exec')
-    exec(code, {}, namespace)
+    try:
+        code=compile(value, '<string>', 'exec')
+    except Exception as e:
+        message = "Failed to compile expression: {}: {}".format(repr(e),value)
+        logger.error(message)
+        raise CastError(message)
+    
+    try:
+        exec(code, {}, namespace)
+    except Exception as e:
+        message="Failed to execute expression: {}: {}".format(repr(e),value)
+        logger.error(message)
+        raise CastError(message)
+    
     result=namespace['result']
     return result
 
@@ -103,7 +118,10 @@ class CastError(Exception):
     def __repr__(self):
         return '{}'.format(self.msg)
 
-def cast_value(target_type, value=None, attrib={}):
+def cast_value(target_type, value=None, attrib={},logclass=None):
+    if logclass:
+            global logger
+            logger=logging.getLogger('.'.join([logclass, "cast_value"]))
     try:
         cast=castly[target_type]
     except KeyError:

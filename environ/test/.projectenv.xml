@@ -5,7 +5,9 @@
     <var name='B1' value='${A1}' export='True' override='True'/> 
     <var name='A2' value='21' export='True' override='True'/> 
     <var name='B2' value='${A2}' export='True' override='True'/>
-    <var name='T1' value='D_PR_LOC' export='True' override='True'/> 
-    <var name='T2' value='D_PACK_LOC' export='True' override='False'/>
+    <var name='T1' value='T1_D_PR_LOC' export='True' override='True'/> 
+    <var name='T2' value='T2_D_PR_LOC' export='True' override='False'/>
+    <var name='T3' value='T3_D_PR_LOC' export='True' override='True'/>
+    <var name='T10' value='T10_D_PR_LOC' export='True' override='True'/>
   </environ>
 </environment>

@@ -262,9 +262,11 @@ class Environ(object):
         '''
         
         self.trace_env=trace_env
+        self.logclass = None
         if logclass:
             global logger
-            logger=logging.getLogger('.'.join([logclass, type(self).__name__]))
+            self.logclass = '.'.join([logclass, type(self).__name__])
+            logger=logging.getLogger(self.logclass)
         #if ulogger:
         #    self.logger=ulogger.getChild(__name__)
         #else:
@@ -382,7 +384,7 @@ class Environ(object):
                     envvar.rest['value']=envvar.value
                     try:
                         envvar.value=cast_value(target_type=envvar.cast,
-                                                attrib=envvar.rest)
+                                                attrib=envvar.rest,logclass=self.logclass)
                         envvar.rest=None
                     except KeyError:
                         msg='Unknown cast: {}; varname {}; origin: {}'\
@@ -425,7 +427,7 @@ class Environ(object):
                 envvar.rest['value']=envvar.value
                 try:
                     envvar.value=cast_value(target_type=envvar.cast,
-                                            attrib=envvar.rest)
+                                            attrib=envvar.rest,logclass=self.logclass)
                     envvar.rest=None
                 except KeyError:
                     msg='Unknown cast: {}; varname {}; origin: {}'\
@@ -619,13 +621,25 @@ class Environ(object):
                     ''' if not found in existing Environ - just update Environ '''
                     if isinstance(input_var.value, str):
                         input_var.value=expandvars(input_var.value, self)
+                    origin_var=self.environ[input_var.name]
                     self.environ[input_var.name]=input_var
+                    if self.trace_env:
+                        if isinstance(self.trace_env, list):
+                            if input_var.name in self.trace_env or not self.trace_env:
+                                logger.debug('\tEnvtrace: ({}):\n\toverwrite by update function: {} @ {}'\
+                                             .format(input_var.name, input_var.value, origin_var.value))
                 else:
                     ''' if in Environ, override only if defined as such. '''
                     if self_var.override and not input_var.input or force_override:
                         if isinstance(input_var.value, str):
                             input_var.value=expandvars(input_var.value, self)
+                        origin_var=self.environ[input_var.name]
                         self.environ[input_var.name]=input_var
+                        if self.trace_env:
+                            if isinstance(self.trace_env, list):
+                                if input_var.name in self.trace_env or not self.trace_env:
+                                    logger.debug('\tEnvtrace: ({}):\n\toverwrite by update function: {} @ {}'\
+                                                 .format(input_var.name, input_var.value, origin_var.value))
                         
                 ''' Export to process' Environ if defined as such '''
                 if input_var.export:
