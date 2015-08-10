@@ -16,7 +16,7 @@ if "install" in sys.argv:
         # catch Debian's custom user site-packages directory.
         lib_paths.append(get_python_lib(prefix="/usr/local"))
     for lib_path in lib_paths:
-        existing_path = os.path.abspath(os.path.join(lib_path, 'accord'))
+        existing_path = os.path.abspath(os.path.join(lib_path, 'projenv'))
         if os.path.exists(existing_path):
             # We note the need for the warning here, but present it after the
             # command is run, so it's more likely to be seen.

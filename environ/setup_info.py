@@ -71,8 +71,7 @@ with open(os.path.join(root_dir, 'DESCRIPTION.rst'), encoding='utf-8') as f:
 import subprocess
 with subprocess.Popen('pip freeze', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
     requirementsb=p.stdout.readlines()
-retval=p.wait()  
-print(retval, requirementsb)
+retval=p.wait() 
 if retval != 0: # 0 retval is success
     raise Exception('pip freeze failed')
 requirements=[r.strip().decode() for r in requirementsb] 
@@ -91,7 +90,7 @@ setup_info = OrderedDict([
     ('long_description',long_description),
     ('license','MIT'),
     ('include_package_data',True),
-    ('distclass',BinaryDistribution),
+    #('distclass',BinaryDistribution),
     ('keywords','project, virtualenv, parameters',),
     ('packages',find_packages(exclude=['example', 'example.*', 'tests', 'tests.*'])),
     ('install_requires', requirements),
