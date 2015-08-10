@@ -1,4 +1,4 @@
-\documentclass[environ_design.tex]{subfiles}
+\documentclass[design.tex]{subfiles}
 \begin{document}
 \chapter{Environment}\index{Environment}
 Environment is a special type of dictionary holding parameters used by parts. As figure Figure~\ref{fig:environment_tree} (page~\pageref{fig:environment_tree}) shows, there are multiple levels and types of environments playing part in program run.
@@ -85,7 +85,9 @@ In the first case, direct access, KeyError exception may be sent if variable nam
 
 In the second example, None value will be returned if not found. 
 
-
+\chapter{Environment Tree}
+Environment files are evaluated in hierarchical way.  The project tree and its packages are treated as nodes in a tree.  Each node can be evaluated and have its own representation of the environment.
+ 
 \section{Single Project Environment Tree}
 At each node, environment is evaluated in the following sequence:
 \begin{enumerate}
