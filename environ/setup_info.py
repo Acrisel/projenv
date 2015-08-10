@@ -4,6 +4,7 @@ import sys
 from distutils.sysconfig import get_python_lib
 from setuptools.dist import Distribution
 from setuptools import find_packages
+from collections import OrderedDict
 
 def fullsplit(path, result=None):
     """
@@ -64,28 +65,43 @@ for dirpath, dirnames, filenames in os.walk(package_name):
 version_file = open(os.path.join(root_dir, 'VERSION'))
 version = version_file.read().strip()
 
+with open(os.path.join(root_dir, 'DESCRIPTION.rst'), encoding='utf-8') as f:
+    long_description = f.read()
+    
+import subprocess
+with subprocess.Popen('pip freeze', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
+    requirementsb=p.stdout.readlines()
+retval=p.wait()  
+print(retval, requirementsb)
+if retval != 0: # 0 retval is success
+    raise Exception('pip freeze failed')
+requirements=[r.strip().decode() for r in requirementsb] 
+
 class BinaryDistribution(Distribution):
     def is_pure(self):
         return False
     
-setup_info = {
-    'name':package_name,
-    'version':version,
-    'url':'https://pypi.python.org/pypi/ProjEnv/0.9.8b',
-    'author':'Acrisel Team',
-    'author_email':'support@acrisel.com',
-    'description':('ProjEnv provides Environ class which allows to the use of hierarchical parameter structure for projects.'
-                   'Environment parameters are kept in XML files. These XML file can span the project folder tree.'),
-    'license':'MIT',
-    'include_package_data':True,
-    'distclass':BinaryDistribution,
-    #'packages':packages,
-    'packages':find_packages(exclude=[]),
-    'package_data':package_data,
+setup_info = OrderedDict([
+    ('name', package_name),
+    ('version',version),
+    ('url','https://github.com/Acrisel/projenv'),
+    ('author','Acrisel Team'),
+    ('author_email','support@acrisel.com'),
+    ('description','ProjEnv allows the use of hierarchical parameter structure for projects.'),
+    ('long_description',long_description),
+    ('license','MIT'),
+    ('include_package_data',True),
+    ('distclass',BinaryDistribution),
+    ('keywords','project, virtualenv, parameters',),
+    ('packages',find_packages(exclude=['example', 'example.*', 'tests', 'tests.*'])),
+    ('install_requires', requirements),
+    ('extras_require',{'dev': [],
+                       'test': [],}),
+    ('package_data',package_data),
     #'scripts':['accord/bin/accord-admin.py'],
     #'py_modules':['pem'],
-    'include_package_data':True,
-    'classifiers':[
+    ('include_package_data',True),
+    ('classifiers',[
         'Development Status :: 4 - Beta',
         'Environment :: Other Environment',
         'Framework :: Project Settings and Operation',
@@ -100,8 +116,8 @@ setup_info = {
         'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries :: Application Frameworks',
         'Topic :: Software Development :: Libraries :: Python Modules',
-    ]
-}
+    ]),
+])
 
 if __name__ == '__main__':
     import pprint

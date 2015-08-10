@@ -35,7 +35,7 @@ if overlay_warning:
 WARNING!
 ========
 
-You have just installed Accord over top of an existing
+You have just installed ProjEnv over top of an existing
 installation, without removing it first. Because of this,
 your install may now include extraneous files from a
 previous version that have since been removed from
@@ -44,6 +44,6 @@ should manually remove the
 
 %(existing_path)s
 
-directory and re-install Accord.
+directory and re-install ProjEnv.
 
 """ % {"existing_path": existing_path})
