@@ -4,7 +4,7 @@ Created on Mar 4, 2014
 
 @author: arnon
 '''
-from packageenv.main import Environ
+from .main import Environ
 import argparse
 
 if __name__ == '__main__':

@@ -42,15 +42,15 @@ packages, package_data = [], {}
 root_dir = os.path.dirname(__file__)
 if root_dir != '':
     os.chdir(root_dir)
-accord_dir = 'accord'
+package_name = 'projenv'
 
-for dirpath, dirnames, filenames in os.walk(accord_dir):
+for dirpath, dirnames, filenames in os.walk(package_name):
     # Ignore PEP 3147 cache dirs and those whose names start with '.'
     dirnames[:] = [d for d in dirnames if not d.startswith('.') and d != '__pycache__']
     parts = fullsplit(dirpath)
-    package_name = '.'.join(parts)
-    if '__init__.py' in filenames and is_package(package_name):
-        packages.append(package_name)
+    package_path = '.'.join(parts)
+    if '__init__.py' in filenames and is_package(package_path):
+        packages.append(package_path)
     elif filenames:
         relative_path = []
         while '.'.join(parts) not in packages:
@@ -61,7 +61,7 @@ for dirpath, dirnames, filenames in os.walk(accord_dir):
         package_files.extend([os.path.join(path, f) for f in filenames])
 
 # Dynamically calculate the version based on accord.VERSION.
-version_file = open(os.path.join(root_dir, accord_dir, 'VERSION'))
+version_file = open(os.path.join(root_dir, 'VERSION'))
 version = version_file.read().strip()
 
 class BinaryDistribution(Distribution):
@@ -69,7 +69,7 @@ class BinaryDistribution(Distribution):
         return False
     
 setup_info = {
-    'name':'Accord',
+    'name':package_name,
     'version':version,
     'url':'http://www.acrisel.com/accord/',
     'author':'Django Software Foundation',

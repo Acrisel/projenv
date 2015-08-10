@@ -3,8 +3,8 @@ Created on Apr 26, 2015
 
 @author: uri
 '''
-from packageenv  import Environ
-from packageenv import EnvVar
+from projenv  import Environ
+from projenv import EnvVar
 import os.path
 
 
@@ -47,10 +47,10 @@ if __name__ == '__main__':
             self.assertEqual(T2_value, T2_expected, "T2 is not correct - should be taken from .projectenv and not overwritten")
             
         def test_Package_value(self):
-            #T3 - Test for setting env variable in packageenv locally after overwriting .projectenv 
+            #T3 - Test for setting env variable in projenv locally after overwriting .projectenv 
             T3_value = os.environ.get('T3','None')
             T3_expected = 'T3_PACK_LOC'
-            self.assertEqual(T3_value, T3_expected, "T3 is not correct - should be taken from packageenv")
+            self.assertEqual(T3_value, T3_expected, "T3 is not correct - should be taken from projenv")
             
             #T3_N_EXP - Test that export = False prevents from exporting variable
             T3_N_value = os.environ.get('T3_N_EXP','None')
@@ -58,42 +58,42 @@ if __name__ == '__main__':
             self.assertEqual(T3_N_value, T3_N_expected, "T3_N_EXP is not correct - should be undefined due to export = False")
             
         def test_L1_2_3_Package_value(self):
-            #T4 - Test for setting env variable in packageenv level lvl1
-            #T5 - Test for setting env variable in packageenv level lvl2
-            #T6 - Test for setting env variable in packageenv level lvl3
+            #T4 - Test for setting env variable in projenv level lvl1
+            #T5 - Test for setting env variable in projenv level lvl2
+            #T6 - Test for setting env variable in projenv level lvl3
             T4_value = os.environ.get('T4','None')
             T4_expected = 'L1_T4'
-            self.assertEqual(T4_value, T4_expected, "T4 is not correct - should be taken from packageenv in L1")
+            self.assertEqual(T4_value, T4_expected, "T4 is not correct - should be taken from projenv in L1")
             T5_value = os.environ.get('T5','None')
             T5_expected = 'L2_T5'
-            self.assertEqual(T5_value, T5_expected, "T5 is not correct - should be taken from packageenv in L2")
+            self.assertEqual(T5_value, T5_expected, "T5 is not correct - should be taken from projenv in L2")
             T6_value = os.environ.get('T6','None')
             T6_expected = 'T6_L3'
-            self.assertEqual(T6_value, T6_expected, "T6 is not correct - should be taken from packageenv in L3")   
+            self.assertEqual(T6_value, T6_expected, "T6 is not correct - should be taken from projenv in L3")   
             
         def test_L1_2_3_Package_value_override(self):
             #T7 - Test for lvl2 override of lvl1
             T7_value = os.environ.get('T7','None')
             T7_expected = 'L2_T7'
-            self.assertEqual(T7_value, T7_expected, "T7 is not correct - should be taken from packageenv in L2")         
+            self.assertEqual(T7_value, T7_expected, "T7 is not correct - should be taken from projenv in L2")         
             #T8 - Test for lvl3 override of lvl2
             T8_value = os.environ.get('T8','None')
             T8_expected = 'L3_T8'
-            self.assertEqual(T8_value, T8_expected, "T8 is not correct - should be taken from packageenv in L3")
+            self.assertEqual(T8_value, T8_expected, "T8 is not correct - should be taken from projenv in L3")
             #T9 - Test for lvl3 override of lvl1
             T9_value = os.environ.get('T9','None')
             T9_expected = 'L3_T9'
-            self.assertEqual(T9_value, T9_expected, "T9 is not correct - should be taken from packageenv in L3")
+            self.assertEqual(T9_value, T9_expected, "T9 is not correct - should be taken from projenv in L3")
             
         def test_L1_Root_value_override(self):
             #T10 - Test for lvl1 override of .projectenv
             T10_value = os.environ.get('T10','None')
             T10_expected = 'L1_T10'
-            self.assertEqual(T10_value, T10_expected, "T10 is not correct - should be taken from packageenv in L1")         
+            self.assertEqual(T10_value, T10_expected, "T10 is not correct - should be taken from projenv in L1")         
             #T8 - Test for lvl3 override of lvl2
             T8_value = os.environ.get('T8','None')
             T8_expected = 'L3_T8'
-            self.assertEqual(T8_value, T8_expected, "T8 is not correct - should be taken from packageenv in L3")
+            self.assertEqual(T8_value, T8_expected, "T8 is not correct - should be taken from projenv in L3")
             
         def test_L1_Cast_value(self):
             #T11_Int - Test for value and type
@@ -145,7 +145,7 @@ if __name__ == '__main__':
             input_env = [EnvVar(name='T18_input', cast='integer', value =5, input= False)]
             T18_value = module_env.get('T18_input')
             T18_expected = 3
-            self.assertEqual(T18_value, T18_expected, "T18 is not correct - should be taken from packageenv of the main env")
+            self.assertEqual(T18_value, T18_expected, "T18 is not correct - should be taken from projenv of the main env")
             module_env.update_env(input_env)
             T18_value = module_env.get('T18_input')
             T18_expected = 5
@@ -154,7 +154,7 @@ if __name__ == '__main__':
             input_env = [EnvVar(name='T19_input', cast='integer', value =15, input= True)]
             T19_value = module_env.get('T19_input')
             T19_expected = 10
-            self.assertEqual(T19_value, T19_expected, "T19 is not correct - should be taken from packageenv of the main env")
+            self.assertEqual(T19_value, T19_expected, "T19 is not correct - should be taken from projenv of the main env")
             module_env.update_env(input_env)
             T19_value = module_env.get('T19_input')
             T19_expected = 10
