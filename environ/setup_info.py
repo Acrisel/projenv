@@ -69,12 +69,11 @@ with open(os.path.join(root_dir, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
     
 import subprocess
-with subprocess.Popen('pip freeze', shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as p:
-    requirementsb=p.stdout.readlines()
-retval=p.wait() 
-if retval != 0: # 0 retval is success
-    raise Exception('pip freeze failed')
-requirements=[r.strip().decode() for r in requirementsb] 
+subprocess.check_call('pip freeze > requirements.txt', shell=True)
+
+with open(os.path.join(root_dir, 'requirements.txt'), encoding='utf-8') as f:
+    requirements = f.read() 
+requirements=[ r for r in requirements.split('\n') if r]
 
 class BinaryDistribution(Distribution):
     def is_pure(self):
@@ -120,4 +119,7 @@ setup_info = OrderedDict([
 
 if __name__ == '__main__':
     import pprint
+    import json
     pprint.pprint(setup_info)
+    with open('setup_info.pkg', 'w') as f:
+        json.dump(setup_info, f)

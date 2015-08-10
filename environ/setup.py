@@ -23,10 +23,12 @@ if "install" in sys.argv:
             overlay_warning = True
             break
 
-
-
+import json
+with open('setup_info.pkg', 'r') as f:
+        setup_info=json.load(f)
 
 setup(**setup_info)
+
 
 if overlay_warning:
     sys.stderr.write("""
