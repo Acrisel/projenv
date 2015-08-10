@@ -71,11 +71,11 @@ class BinaryDistribution(Distribution):
 setup_info = {
     'name':package_name,
     'version':version,
-    'url':'http://www.acrisel.com/accord/',
-    'author':'Django Software Foundation',
-    'author_email':'foundation@djangoproject.com',
-    'description':('A high-level Python Web framework that encourages '
-                 'rapid development and clean, pragmatic design.'),
+    'url':'https://pypi.python.org/pypi/ProjEnv/0.9.8b',
+    'author':'Acrisel Team',
+    'author_email':'support@acrisel.com',
+    'description':('ProjEnv provides Environ class which allows to the use of hierarchical parameter structure for projects.'
+                   'Environment parameters are kept in XML files. These XML file can span the project folder tree.'),
     'license':'MIT',
     'include_package_data':True,
     'distclass':BinaryDistribution,
@@ -86,7 +86,7 @@ setup_info = {
     #'py_modules':['pem'],
     'include_package_data':True,
     'classifiers':[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Other Environment',
         'Framework :: Project Settings and Operation',
         'Intended Audience :: Developers',
