@@ -65,13 +65,13 @@ for dirpath, dirnames, filenames in os.walk(package_name):
 version_file = open(os.path.join(root_dir, 'VERSION'))
 version = version_file.read().strip()
 
-with open(os.path.join(root_dir, 'DESCRIPTION.rst'), encoding='utf-8') as f:
+with open(os.path.join(root_dir, 'DESCRIPTION.rst')) as f:
     long_description = f.read()
     
 import subprocess
 subprocess.check_call('pip freeze > requirements.txt', shell=True)
 
-with open(os.path.join(root_dir, 'requirements.txt'), encoding='utf-8') as f:
+with open(os.path.join(root_dir, 'requirements.txt')) as f:
     requirements = f.read() 
 requirements=[ r for r in requirements.split('\n') if r]
 

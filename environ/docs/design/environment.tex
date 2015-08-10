@@ -29,7 +29,7 @@ To get environ dictionary, program can perform the following command:
 	\item Accessing environment variables
 \end{enumerate}
 
-\subsection{Loading environmentvariables}\index{Environment!Loading}\index{Environment!Environ}
+\subsection{Loading environmentvariables}\index{Load}\index{Environ}
 
 	\begin{lstlisting}
 	import environ 
@@ -64,7 +64,7 @@ In addition to file name overrides, configuration dictionary can provide syntax 
 
 Within derivative articles environment can be updated with environment variable as follows:
 
-\subsection{Updating environment variables}\index{Environment!Update}\index{Environment!EnvVar}
+\subsection{Updating environment variables} \index{Update} \index{EnvVar}
 \begin{lstlisting}
 env.update([
   EnvVar(name='REJ_ALLOWED',cast='integer',value=0,input=True),
@@ -75,9 +75,9 @@ env.update([
 \paragraph{input} flag will set the variable with the value of parent environment, if defined.
 \paragraph{override} flags environment variable as changeable by derivative program articles.
 
-\subsection{Accessing environment variables}
+\subsection{Accessing environment variables} \index{Environment!Using}\index{get}
 \begin{lstlisting}
-ofile=env.environ[]'OUT_FILE']
+ofile=env['OUT_FILE']
 rate=env.get('RATE')
 \end{lstlisting}
 
@@ -85,10 +85,10 @@ In the first case, direct access, KeyError exception may be sent if variable nam
 
 In the second example, None value will be returned if not found. 
 
-\chapter{Environment Tree}
+\chapter{Environment Tree} \index{Tree}
 Environment files are evaluated in hierarchical way.  The project tree and its packages are treated as nodes in a tree.  Each node can be evaluated and have its own representation of the environment.
  
-\section{Single Project Environment Tree}
+\section{Single Project Environment Tree}\index{Tree!Single Project}
 At each node, environment is evaluated in the following sequence:
 \begin{enumerate}
 	\item First .projectenv, if available, is read and set.
@@ -180,7 +180,7 @@ Listing \ref{lst:project_env} shows example of an environment file.  Core enviro
 
 \paragraph{Note:} \emph{\textless~environment\textgreater} tag is to provide enclosure to environ.  Environ mechanism is not depending on its existent per se.  However, some kind on enclosure is required;  \emph{\textless~environ\textgreater} can not be in top level of the XML.
 
-\section{Multiple Project Environment Tree}
+\section{Multiple Project Environment Tree}\index{Tree!Multiple Projects}
 At each import, environment is evaluated in the following sequence:
 \begin{enumerate}
 	\item First get the node representation of imported path.
@@ -215,5 +215,52 @@ Listings \ref{lst:env_projb} shows import project directive within project B's e
 
 \paragraph{Note:}import path can only include environment variables that are in the OS level pre-eveluation.
 
+\chapter{Best Practices}\index{Best Practices}
+So many options, so what should one do?
+
+\section{Naming Parameters}\index{Naming convention}
+\paragraph{Project Prefix}\index{Naming convention!Prefix}
+Prefix your parameters with an identifier.  Specifically if your projects would need to cooperate (import their environment).  In Listings~\ref{lst:dot_projectenv_bp} (page~\pageref{lst:dot_projectenv_bp}), we have all parameters us 'AC\_' as prefix.  We also define 'AC\_PROJ\_PREFIX' that can be used in program to construct parameter name.
+
+\paragraph{Style}\index{Naming convention!Style} We recommend following UNIX convention for environment variables.  Use uppercase letters separated with underscore.  We use this style in all of this document listings.
+
+\paragraph{Drivers and Derivatives}\index{Parameter!drivers}\index{Parameter!derivatives}
+For the sake of this discussion we define three types of parameters:
+\begin{enumerate}
+	\item \em{standalone} is a parameter that is not dependent on another and is not used by another parameter.
+	\item \em{driver} is a parameter that other parameters defined by it.
+	\item \em{derivative} is a parameter that includes a driver in its definitions.
+\end{enumerate}
+
+A parameter can be both a driver and derivative.
+
+Use drivers and derivative parameter definition in such a way that users may personalize the behavior of the system.  For example, developers may want to change their own directory structure to fit their own tools.
+ 
+
+\section{.projectenv}\index{.projectenv}
+Dot (.) projectenv usually contains parameters that are good for the all projects.  You can look at is as your standard parameters to all projects that you produce. In listings ~\ref{lst:dot_projectenv_bp}, locations are defined as derivatives of AC\_VAR\_BASE. This is useful since users of this project can override that parameter to change to their own structure.
+
+\begin{lstlisting}[language=XML, label=lst:dot_projectenv_bp, caption='.projectenv.xml example']
+<environment>
+<environ>
+<var name='AC_PROJ_PREFIX' value='AC_' export='True' override='True'/>
+<var name='AC_VAR_BASE' value='/var/accord/data/' override='True' export='True'/>
+<var name='AC_ENV_NAME' value='.' override='True' export='True'/>
+<var name='AC_VAR_LOC' value='${AC_VAR_BASE}${AC_ENV_NAME}/' override='True' export='True'/>
+<var name='AC_LOG_LOC' value='${AC_VAR_LOC}/log/' override='True' export='True'/>
+<var name='AC_REJ_LOC' value='${AC_VAR_LOC}/rej/' override='True' export='True'/>
+<var name='AC_RUN_LOC' value='${AC_VAR_LOC}/run/' override='True' export='True'/>
+<var name='AC_IN_LOC' value='${AC_VAR_LOC}/in/' override='True' export='True'/>
+<var name='AC_OUT_LOC' value='${AC_VAR_LOC}/out/' override='True' export='True'/>
+</environ>
+</environment>
+\end{lstlisting}
+
+\section{packageenv}\index{packageenv}
+Packageenv includes definitions for that are specific to the project or the package.  Usually this is kept for things like RPC\_PORT or maybe MAIL\_SEND\_SMTP. 
+
+\section{personalenv}\index{personaleenv}
+Personalenv provides means to personalize an environment.  Users can override packageenv or .projectenv parameters.
+you may want to exclude \em{personalenv} from your code repository (e.g., add personalenv.xml to .gitignore).  Otherwise, users wmay override each other personalizations. 
 
 \end{document}
