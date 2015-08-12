@@ -14,7 +14,7 @@ from copy import copy, deepcopy
 import ast
 from logging import getLogger
 
-logger=logging.getLogger(__name__)
+envlogger=logging.getLogger(__name__)
 
 from .expandvars import expandvars
 from .expandvars import pathhasvars
@@ -146,13 +146,13 @@ def _mk_env_var(attrib): # logger):
         try:
             var.export=ast.literal_eval(var.export)
         except Exception:
-            logger.critical('Wrong export flag value: {}; must be True of False.'.format(var.export))
+            envlogger.critical('Wrong export flag value: {}; must be True of False.'.format(var.export))
             raise EnvironError('Bad value in export flag for {}; must be True of False'.format(var.name))
     if isinstance(var.override, str) :
         try:
             var.override=ast.literal_eval(var.override)
         except Exception:
-            logger.critical('Wrong override flag value: {}; must be True of False.'.format(var.override))
+            envlogger.critical('Wrong override flag value: {}; must be True of False.'.format(var.override))
             raise EnvironError('Bad value in override flag for {}; must be True of False'.format(var.name))
     return var
 
@@ -167,7 +167,7 @@ def _update_var(source_map, override, trace_env): #, logger):
         if trace_env:
             if isinstance(trace_env, list):
                 if name in trace_env or not trace_env:
-                    logger.debug('\tEnvtrace: ({}):\n\tinitial: {} @ {}'\
+                    envlogger.debug('\tEnvtrace: ({}):\n\tinitial: {} @ {}'\
                                  .format(name, override.value, override.origin))
     else:
         if current.override:
@@ -176,13 +176,13 @@ def _update_var(source_map, override, trace_env): #, logger):
             if trace_env:
                 if isinstance(trace_env, list):
                     if name in trace_env or not trace_env:
-                        logger.debug('\tEnvtrace: ({}):\n\tcurrent: {} @ {}\n\toverride: {} @ {}'\
+                        envlogger.debug('\tEnvtrace: ({}):\n\tcurrent: {} @ {}\n\toverride: {} @ {}'\
                                      .format(name, current.value, current.origin,
                                              override.value, override.origin))
         else:
             msg='Trying to override {}; source {}; offender {};'\
                 .format(name, current.origin, override.origin)
-            logger.critical(msg)
+            envlogger.critical(msg)
             raise EnvironError('Trying to override variable that is not set to allow override')
 
 def _make_node_schema(node_files, enclosure, trace_env): #, logger):
@@ -196,7 +196,7 @@ def _make_node_schema(node_files, enclosure, trace_env): #, logger):
     files=filter(lambda f: f is not None, 
                  [node_files.project, node_files.package, node_files.personal])
     for file in files:
-        logger.debug('Loading schema: {}'.format(file))
+        envlogger.debug('Loading schema: {}'.format(file))
         root=_get_root_env(file, enclosure=enclosure)
         for child in root.childNodes: 
             if child.nodeType != child.ELEMENT_NODE:
@@ -246,7 +246,7 @@ class Environ(object):
             once removed, cannot be added back by derivative environments.
             '''
     
-    def __init__(self, osenv=True, configure=None, trace_env=None, logclass=None): #, ulogger=None):
+    def __init__(self, osenv=True, configure=None, trace_env=None, logclass=None, logger=None):
         ''' Instantiates Environ object by setting its internal dictionary. 
         Args:
             osenv: if True, inherit os.environ
@@ -263,14 +263,12 @@ class Environ(object):
         
         self.trace_env=trace_env
         self.logclass = None
+        global envlogger
         if logclass:
-            global logger
             self.logclass = '.'.join([logclass, type(self).__name__])
-            logger=logging.getLogger(self.logclass)
-        #if ulogger:
-        #    self.logger=ulogger.getChild(__name__)
-        #else:
-        #    self.logger=logger
+            envlogger=logging.getLogger(self.logclass)
+        elif logger:
+            envlogger=logger.getChild(__name__)
             
         self.__config=Configure()
         if configure:
@@ -399,7 +397,7 @@ class Environ(object):
                 if self.trace_env:
                     if isinstance(self.trace_env, list):
                         if envvar.name in self.trace_env or not self.trace_env:
-                            logger.debug('\tEnvtrace: eval ({}): {}'\
+                            envlogger.debug('\tEnvtrace: eval ({}): {}'\
                                               .format(envvar.name, envvar.value))
        
             else:
@@ -439,7 +437,7 @@ class Environ(object):
             if self.trace_env:
                 if isinstance(self.trace_env, list):
                     if envvar.name in self.trace_env or not self.trace_env:
-                        logger.debug('\tEnvtrace: eval ({}): {}'\
+                        envlogger.debug('\tEnvtrace: eval ({}): {}'\
                                           .format(envvar.name, envvar.value))
             
         
@@ -456,7 +454,7 @@ class Environ(object):
             node_files=_get_available_env_files(path=path, projectenv=self.DOTPROJECTENV, 
                                                 packageenv=self.PACKAGEENV, 
                                                 personaleenv=self.PERSONALENV)
-            logger.debug('Found node schema: \n\t{}'.format(repr(node_files)))
+            envlogger.debug('Found node schema: \n\t{}'.format(repr(node_files)))
             node_env=_make_node_schema(node_files, enclosure=self.__config.xmlenclosure, trace_env=self.trace_env) #, logger=self.logger)
         return node_env
     
@@ -485,7 +483,7 @@ class Environ(object):
         mark=self.DOTPROJECTENV
         
         path=expandvars(path, environ=self)
-        logger.debug('Evaluating file: {}'.format(path))
+        envlogger.debug('Evaluating file: {}'.format(path))
         
         env_nodes=list()
         if not pathhasvars(path):
@@ -542,9 +540,9 @@ class Environ(object):
                             path=path[0]
                     else:
                         msg='Cannot find {} to import; please make sure it is on PYTHONPATH or add path attribute'.format(path)
-                        logger.critical(msg)
+                        envlogger.critical(msg)
                         raise EnvironError(msg)
-                logger.debug('Importing environment: {}'.format(path))
+                envlogger.debug('Importing environment: {}'.format(path))
                 if pathhasvars(path):
                     raise EnvironError('Trying to import named {} with unresolved path: {}'.format(name, path))
                 env_import=self.__get_env_path(path)
@@ -625,7 +623,7 @@ class Environ(object):
                     if self.trace_env:
                         if isinstance(self.trace_env, list):
                             if input_var.name in self.trace_env or not self.trace_env:
-                                logger.debug('\tEnvtrace: ({}):\n\tnew by update function: {}'\
+                                envlogger.debug('\tEnvtrace: ({}):\n\tnew by update function: {}'\
                                              .format(input_var.name, input_var.value,))
                 else:
                     ''' if in Environ, override only if defined as such. '''
@@ -637,7 +635,7 @@ class Environ(object):
                         if self.trace_env:
                             if isinstance(self.trace_env, list):
                                 if input_var.name in self.trace_env or not self.trace_env:
-                                    logger.debug('\tEnvtrace: ({}):\n\toverwrite by update function: {} @ {}'\
+                                    envlogger.debug('\tEnvtrace: ({}):\n\toverwrite by update function: {} @ {}'\
                                                  .format(input_var.name, input_var.value, origin_var.value))
                         
                 ''' Export to process' Environ if defined as such '''
