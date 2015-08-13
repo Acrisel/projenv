@@ -281,7 +281,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     projectloc=mk_project(args)
-    from accord.bin.mkprojlocs import mk_proj_locs
+    from .mkprojlocs import mk_proj_locs
     mk_proj_locs(projectloc)
 
 

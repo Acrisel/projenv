@@ -1,0 +1,43 @@
+Metadata-Version: 1.1
+Name: projenv
+Version: 0.9.10b
+Summary: ProjEnv allows the use of hierarchical parameter structure for projects.
+Home-page: https://github.com/Acrisel/projenv
+Author: Acrisel Team
+Author-email: support@acrisel.com
+License: MIT
+Description: =======
+        ProjEnv
+        =======
+        
+        projenv provides mechanism for project to manage parameters for programs in hierarchical way.
+        
+        Projects can use Environ xml files to define parameters in any package node.  
+        Then, in programs, environment can be loaded and used as Environ dictionary.
+        
+        os.environ can be also used when parameters are defined as exported to the environment.
+        
+        projenv mechanism supports override of environment values in package hierarcy starting from 
+        project root folder to the node evaluated.
+        
+        More information in docs/design document.
+        
+        We hope you would enjoy using this package.  Let us know your experiecne.
+        
+        The Acrisel Team.
+Keywords: project,virtualenv,parameters
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Other Environment
+Classifier: Framework :: Project Settings and Operation
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Topic :: Software Development :: Libraries :: Application Frameworks
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

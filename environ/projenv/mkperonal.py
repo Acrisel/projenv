@@ -68,7 +68,7 @@ def personalize(projectloc):
 if __name__ == '__main__':
     projectloc=get_proj_loc()
     personalize(projectloc)       
-    from accord.bin.mkprojlocs import mk_proj_locs
+    from .mkprojlocs import mk_proj_locs
     mk_proj_locs(projectloc)
 
 

@@ -2,7 +2,6 @@ import os
 import sys
 
 from setuptools import setup
-from setup_info import setup_info
 from distutils.sysconfig import get_python_lib
 
 # Warn if we are installing over top of an existing installation. This can
@@ -23,10 +22,61 @@ if "install" in sys.argv:
             overlay_warning = True
             break
 
-import json
-with open('setup_info.pkg', 'r') as f:
-        setup_info=json.load(f)
-
+setup_info={'name': 'projenv',
+ 'version': '0.9.10b',
+ 'url': 'https://github.com/Acrisel/projenv',
+ 'author': 'Acrisel Team',
+ 'author_email': 'support@acrisel.com',
+ 'description': 'ProjEnv allows the use of hierarchical parameter structure '
+                'for projects.',
+ 'long_description': '=======\n'
+                     'ProjEnv\n'
+                     '=======\n'
+                     '\n'
+                     'projenv provides mechanism for project to manage '
+                     'parameters for programs in hierarchical way.\n'
+                     '\n'
+                     'Projects can use Environ xml files to define '
+                     'parameters in any package node.  \n'
+                     'Then, in programs, environment can be loaded and used '
+                     'as Environ dictionary.\n'
+                     '\n'
+                     'os.environ can be also used when parameters are '
+                     'defined as exported to the environment.\n'
+                     '\n'
+                     'projenv mechanism supports override of environment '
+                     'values in package hierarcy starting from \n'
+                     'project root folder to the node evaluated.\n'
+                     '\n'
+                     'More information in docs/design document.\n'
+                     '\n'
+                     'We hope you would enjoy using this package.  Let us '
+                     'know your experiecne.\n'
+                     '\n'
+                     'The Acrisel Team.',
+ 'license': 'MIT',
+ 'keywords': 'project, virtualenv, parameters',
+ 'packages': ['projenv'],
+ 'install_requires': ['namedlist==1.7',
+                      'python-dateutil==2.4.2',
+                      'six==1.9.0'],
+ 'extras_require': {'dev': [], 'test': []},
+ 'classifiers': ['Development Status :: 4 - Beta',
+                 'Environment :: Other Environment',
+                 'Framework :: Project Settings and Operation',
+                 'Intended Audience :: Developers',
+                 'License :: OSI Approved :: MIT License',
+                 'Operating System :: OS Independent',
+                 'Programming Language :: Python',
+                 'Programming Language :: Python :: 3',
+                 'Programming Language :: Python :: 3.2',
+                 'Programming Language :: Python :: 3.3',
+                 'Programming Language :: Python :: 3.4',
+                 'Programming Language :: Python :: 3.5',
+                 'Topic :: Software Development :: Libraries :: Application '
+                 'Frameworks',
+                 'Topic :: Software Development :: Libraries :: Python '
+                 'Modules']}
 setup(**setup_info)
 
 

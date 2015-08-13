@@ -1,3 +1,8 @@
 namedlist==1.7
 python-dateutil==2.4.2
 six==1.9.0
+
+[dev]
+
+
+[test]

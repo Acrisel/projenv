@@ -40,7 +40,7 @@ def is_package(package_name):
 # an easy way to do this.
 packages, package_data = [], {}
 
-root_dir = os.path.dirname(__file__)
+root_dir = os.path.abspath(os.path.dirname(__file__))
 if root_dir != '':
     os.chdir(root_dir)
 package_name = 'projenv'
@@ -73,7 +73,7 @@ subprocess.check_call('pip freeze > requirements.txt', shell=True)
 
 with open(os.path.join(root_dir, 'requirements.txt')) as f:
     requirements = f.read() 
-requirements=[ r for r in requirements.split('\n') if r]
+requirements=[ r for r in requirements.split('\n') if r and not r.startswith(package_name+'=')]
 
 class BinaryDistribution(Distribution):
     def is_pure(self):
@@ -88,17 +88,16 @@ setup_info = OrderedDict([
     ('description','ProjEnv allows the use of hierarchical parameter structure for projects.'),
     ('long_description',long_description),
     ('license','MIT'),
-    ('include_package_data',True),
+    #('include_package_data',True),
+    #('package_data',package_data),
     #('distclass',BinaryDistribution),
     ('keywords','project, virtualenv, parameters',),
-    ('packages',find_packages(exclude=['example', 'example.*', 'tests', 'tests.*'])),
+    ('packages', find_packages(exclude=['example', 'example.*', 'tests', 'tests.*'])),
     ('install_requires', requirements),
     ('extras_require',{'dev': [],
                        'test': [],}),
-    ('package_data',package_data),
     #'scripts':['accord/bin/accord-admin.py'],
     #'py_modules':['pem'],
-    ('include_package_data',True),
     ('classifiers',[
         'Development Status :: 4 - Beta',
         'Environment :: Other Environment',
@@ -113,13 +112,18 @@ setup_info = OrderedDict([
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries :: Application Frameworks',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-    ]),
+        'Topic :: Software Development :: Libraries :: Python Modules',]),
 ])
 
 if __name__ == '__main__':
     import pprint
-    import json
-    pprint.pprint(setup_info)
-    with open('setup_info.pkg', 'w') as f:
-        json.dump(setup_info, f)
+    from string import Template
+    pkg=pprint.pformat(setup_info)
+    with open('setup.py.template', 'r') as f:
+        setup_template=f.read()
+    setup=Template(setup_template).substitute(setup_info=pkg)
+    with open('setup.py', 'w') as f:
+        f.write(setup)
+    
+    #with open('setup_info.pkg', 'w') as f:
+    #    json.dump(setup_info, f)
