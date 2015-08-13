@@ -13,6 +13,7 @@ import logging
 from copy import copy, deepcopy
 import ast
 from logging import getLogger
+import inspect
 
 envlogger=logging.getLogger(__name__)
 
@@ -306,8 +307,13 @@ class Environ(object):
         Access environ dictionary directly by its attribute environ.
         '''
         
+        stack=inspect.stack()
+        caller=stack[1]
         if path:
             path=os.path.abspath(path)
+        elif len(caller) > 1:
+            caller_loc=os.path.dirname(caller[1])
+            path=caller_loc
         
         if path is not None and envtree:
             if not os.path.exists(path):
