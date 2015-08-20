@@ -73,7 +73,7 @@ subprocess.check_call('pip freeze > requirements.txt', shell=True)
 
 with open(os.path.join(root_dir, 'requirements.txt')) as f:
     requirements = f.read() 
-requirements=[ r for r in requirements.split('\n') if r and not r.startswith(package_name+'=')]
+requirements=[ r.replace('==', '>=') for r in requirements.split('\n') if r and not r.startswith(package_name+'=')]
 
 class BinaryDistribution(Distribution):
     def is_pure(self):
