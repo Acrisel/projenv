@@ -26,7 +26,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 
-input_environ=[EnvVar(name='A1',value='133', input=True),]
+input_environ=[EnvVar(name='A1',value='133', input=False),]
 
 root_loc=os.path.dirname(__file__)
 module_loc=os.path.join(root_loc, 'envexample', 'lvl1', 'lvl2', 'lvl3')

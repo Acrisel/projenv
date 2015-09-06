@@ -633,7 +633,7 @@ class Environ(object):
                                              .format(input_var.name, input_var.value,))
                 else:
                     ''' if in Environ, override only if defined as such. '''
-                    if self_var.override and input_var.input or force_override:
+                    if self_var.override and not input_var.input or force_override:
                         if isinstance(input_var.value, str):
                             input_var.value=expandvars(input_var.value, self)
                         origin_var=self.environ[input_var.name]
