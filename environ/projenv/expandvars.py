@@ -48,8 +48,12 @@ def expandvars(source, environ=None):
             name = str(name)
         if name in environ.keys():
             tail = source[j:]
-            value = environ[name]
-            parts=value.split('\\')
+            value = str(environ[name])
+            try:
+                parts=value.split('\\')
+            except Exception as e:
+                print(name, value, ':', repr(e))
+                raise
             value=os.path.join(*parts)
             if isinstance(source, bytes):
                 value = value.encode('ASCII')

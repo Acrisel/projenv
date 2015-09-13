@@ -12,8 +12,8 @@ from namedlist import namedlist
 import logging
 from copy import copy, deepcopy
 import ast
-from logging import getLogger
 import inspect
+import sys
 
 envlogger=logging.getLogger(__name__)
 
@@ -30,6 +30,7 @@ EnvVar=namedlist('EnvVar',
                   ('export', False),
                   ('encrypt', ''),
                   ('rest', None),
+                  ('comment', None),
                   ('origin', None),])
 
 NONE_XML_FIELD=['origin']
@@ -270,6 +271,14 @@ class Environ(object):
             envlogger=logging.getLogger(self.logclass)
         elif logger:
             envlogger=logger.getChild(__name__)
+                        
+        if self.trace_env is not None:
+            envlogger.setLevel(logging.DEBUG)
+            if not envlogger.hasHandlers():
+                handler=logging.StreamHandler(stream=sys.stdout)
+                formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+                handler.setFormatter(formatter)            
+                envlogger.addHandler(handler)
             
         self.__config=Configure()
         if configure:
@@ -416,8 +425,9 @@ class Environ(object):
         names.reverse()
         for name in names:
             envvar=self.environ[name]
-            if isinstance(envvar.value, str):
-                new_value=expandvars(source=envvar.value,environ=self)  
+            value=envvar.value
+            if isinstance(value, str):
+                new_value=expandvars(source=value,environ=self)  
                 envvar.value=new_value 
                          
             if envvar.export:
@@ -460,7 +470,7 @@ class Environ(object):
             node_files=_get_available_env_files(path=path, projectenv=self.DOTPROJECTENV, 
                                                 packageenv=self.PACKAGEENV, 
                                                 personaleenv=self.PERSONALENV)
-            envlogger.debug('Found node schema: \n\t{}'.format(repr(node_files)))
+            envlogger.debug('Found node schema {}: \n\t{}'.format(path, repr(node_files)))
             node_env=_make_node_schema(node_files, enclosure=self.__config.xmlenclosure, trace_env=self.trace_env) #, logger=self.logger)
         return node_env
     
@@ -676,7 +686,8 @@ class Environ(object):
                 
     def log_env(self, log=None):
         mylog=print if log is None else log
-        msg=map(lambda x: '{k}={v}'.format(k=x, v=self.environ[x].value), 
+        msg=map(lambda x: '{k}={v} ({t})'.format(k=x, v=self.environ[x].value, 
+                                                 t=type(self.environ[x].value).__name__), 
                 sorted(self.environ.keys()))
         mylog('Environ Begin:\n\t'+'\n\t'.join(msg)+'\n\tEnviron End.')
         

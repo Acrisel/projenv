@@ -29,13 +29,19 @@ logger.setLevel(logging.DEBUG)
 input_environ=[EnvVar(name='A1',value='133', input=False),]
 
 root_loc=os.path.dirname(__file__)
-module_loc=os.path.join(root_loc, 'envexample', 'lvl1', 'lvl2', 'lvl3')
+loc=[root_loc, 
+     'envexample', 
+     'lvl1', 
+     'lvl2', 
+     'lvl3',
+     ]
+module_loc=os.path.join(*loc)
 module_env=Environ(osenv=True, trace_env=['A1', ], logclass='Example') #, ulogger=logger)
 module_env.loads(path=module_loc)
 module_env.update_env(input_environ=input_environ)
 
-print('POST ENVIRON:', repr(module_env))
-
+#print('POST ENVIRON:', repr(module_env))
+module_env.log_env()
 import pickle
 
 pickle.dumps(module_env)

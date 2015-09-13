@@ -5,5 +5,6 @@
     <var name='B1' value='${A1}' export='True' override='True'/> 
     <var name='A2' value='21' export='True' override='True'/> 
     <var name='B2' value='${A2}' export='True' override='True'/> 
+    <var name='G1' value='34' cast='literal' export='True' override='True'/> 
   </environ>
 </environment>
