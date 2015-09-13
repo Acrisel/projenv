@@ -20,13 +20,12 @@ if x is 'None':
 logger=logging.getLogger('Example')
 
 handler = logging.StreamHandler()
-formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 
-input_environ=[EnvVar(name='A1',value='133', input=False),]
+input_environ=[EnvVar(name='A1',value='133', input=True),]
 
 root_loc=os.path.dirname(__file__)
 loc=[root_loc, 
@@ -42,6 +41,6 @@ module_env.update_env(input_environ=input_environ)
 
 #print('POST ENVIRON:', repr(module_env))
 module_env.log_env()
-import pickle
 
+import pickle
 pickle.dumps(module_env)

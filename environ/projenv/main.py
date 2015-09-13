@@ -13,6 +13,7 @@ import logging
 from copy import copy, deepcopy
 import ast
 import inspect
+import traceback
 import sys
 
 envlogger=logging.getLogger(__name__)
@@ -428,10 +429,24 @@ class Environ(object):
             value=envvar.value
             if isinstance(value, str):
                 new_value=expandvars(source=value,environ=self)  
-                envvar.value=new_value 
-                         
+                envvar.value=new_value
+                if self.trace_env:
+                    if value != new_value and isinstance(self.trace_env, list):
+                        if envvar.name in self.trace_env or not self.trace_env:
+                            envlogger.debug('\tEnvtrace: expand var ({}): from: {} to: {}'\
+                                              .format(envvar.name, value, envvar.value))                          
             if envvar.export:
                 os.environ[envvar.name]=str(envvar.value)
+                if self.trace_env:
+                    if isinstance(self.trace_env, list):
+                        if envvar.name in self.trace_env or not self.trace_env:
+                            envlogger.debug('\tEnvtrace: export var ({}): {}'\
+                                              .format(envvar.name, envvar.value))                          
+            # MYDEBUG:
+            #if envvar.name == 'AC_LOG_CENTRAL':
+            #    #trace=inspect.stack()
+            #    print('AC_LOG_CENTRAL', envvar)
+            #    traceback.print_stack()
             if envvar.cast is not None and envvar.cast != 'string' and isinstance(envvar.value, str):
                 ''' TODO: check why sub fields cannot be variables '''
                 vardict=envvar._asdict()
@@ -439,6 +454,8 @@ class Environ(object):
                 #                  for n,v in vardict.items()])
                 envvar.rest=vardict
                 envvar.rest['value']=envvar.value
+                value=envvar.value
+                cast=envvar.cast
                 try:
                     envvar.value=cast_value(target_type=envvar.cast,
                                             attrib=envvar.rest,logclass=self.logclass)
@@ -447,18 +464,20 @@ class Environ(object):
                     msg='Unknown cast: {}; varname {}; origin: {}'\
                         .format(envvar.cast,envvar.name,envvar.origin)
                     raise EnvironError(msg)
-                else:
-                    envvar.cast=envvar.cast
+                #else:
+                #    envvar.cast=envvar.cast
             self.environ[envvar.name]=envvar   
             if self.trace_env:
                 if isinstance(self.trace_env, list):
                     if envvar.name in self.trace_env or not self.trace_env:
-                        envlogger.debug('\tEnvtrace: eval ({}): {}'\
-                                          .format(envvar.name, envvar.value))
-            
-        
+                        envlogger.debug('\tEnvtrace: eval ({}/{}): from:  {} to: {}'\
+                                          .format(envvar.name, envvar.cast, value, envvar.value))
+                    
     def __build_env_tree(self, path):
+        # Load environment vars as is from path into schema tree
         env_schema=self.__get_env_path(path)
+        
+        # first walk bottom up to evaluate vars - only expand vars.
         self.__eval_env_schema_bottom_up(env_schema)
         self.__eval_env_schema_top_down()
                 
@@ -689,7 +708,7 @@ class Environ(object):
         msg=map(lambda x: '{k}={v} ({t})'.format(k=x, v=self.environ[x].value, 
                                                  t=type(self.environ[x].value).__name__), 
                 sorted(self.environ.keys()))
-        mylog('Environ Begin:\n\t'+'\n\t'.join(msg)+'\n\tEnviron End.')
+        mylog('Environ Begin:\n\t'+'\n\t'.join(msg)+'\nEnviron End.')
         
     def __clean_env_var(self, var):
         default=DEFAULT_ENVVAR
