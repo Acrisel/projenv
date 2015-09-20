@@ -11,6 +11,8 @@ _varprogb = None
 def expandvars(source, environ=None):
     """Expand shell variables of form $var and ${var}.  Unknown variables
     are left unchanged."""
+    if source is None:
+        return source
     if environ is None:
         environ=os.environ
         #os.path.expandvars(path)
@@ -25,7 +27,7 @@ def expandvars(source, environ=None):
         search = _varprogb.search
         start = b'{'
         end = b'}'
-    else:
+    elif isinstance(source, str):
         if '$' not in source:
             return source
         if not _varprog:
@@ -35,6 +37,8 @@ def expandvars(source, environ=None):
         search = _varprog.search
         start = '{'
         end = '}'
+    else:
+        return source
     i = 0
     while True:
         m = search(source, i)
