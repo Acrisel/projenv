@@ -3,7 +3,7 @@
 \chapter{Environment}\index{Environment}
 Environment is a special type of dictionary holding parameters used by parts. As figure Figure~\ref{fig:environment_tree} (page~\pageref{fig:environment_tree}) shows, there are multiple levels and types of environments playing part in program run.
 
-Environment evaluation process walks the project tree from top to program location.  In each node (package branch), there are three files defining nodes environment:
+Environment evaluation process walks the project tree from top to program location.  In each non-root node (package branch), there could be one file defining nodes of environment. In root note there could be two types. In addition ability overwrite variables in personal setting is supported using personalenv file.
 
 \section{Definitions}
 \setcounter{tablerownumbers}{0}
@@ -11,50 +11,48 @@ Environment evaluation process walks the project tree from top to program locati
 	\hline
 	\emph{No.} & \emph{Name} & \emph{Description} \\ \hline
 	\rownumber & .projectenv\index{environ!.projectenv} & read-only project level environment variables; also identifies project root location. \\ \hline
-	\rownumber & projectenv\index{environ!projectenv} & addon environment for given read-only environment. \\ \hline
-	\rownumber & personalenv\index{environ!personalenv} & personal overrides for project or package environment.  It may include only overrides. \\ \hline
-	\rownumber & .packageenv \index{environ!.packageenv}& read-only package level environment variables. \\ \hline
 	\rownumber & packageenv \index{environ!packageenv}& addon environment for given read-only environment in local or upper environments. \\ \hline
+	\rownumber & personalenv \index{environ!personalenv}& personal overrides for project or package environment. It may include only overrides. \\ \hline
 \caption{Environment Definitions}
 \label{table:environ-defs}
 \end{longtable}
 
 
 \section{Program Interface}
-Within programs there are three types of access points to environment variables.
-To get environ dictionary, program can perform the following command:
+Within programs there are three types of access points to the environment variables.
+To get projenv dictionary, program can perform the following command:
 \begin{enumerate}
 	\item Loading environment variables from project structure
 	\item Updating environment variable in program
 	\item Accessing environment variables
 \end{enumerate}
 
-\subsection{Loading environmentvariables}\index{Load}\index{Environ}
+\subsection{Loading environment variables}\index{Load}\index{Environ}
 
 	\begin{lstlisting}
-	import environ 
-	env=environ.Environ()
+	import projenv 
+	env=projenv.Environ()
 	\end{lstlisting}
 
-When Program evaluates environment, it starts with root location going down the tree up to an including package environment of Program location. 
+When Program evaluates environment, it starts with root location going down the tree up to and including package environment of Program location. 
 
-Environ \_\_init\_\_ has the following signature:
-\textbox{Environ(env=None, path=None, envtree=True, osenv=True, syntax='XML', config=None\emph{dict})}
+Environ class \_\_init\_\_ has the following signature:
+\textbox{Environ(self, osenv=True, configure=None, trace\_env=None, logclass=None, logger=None)}
 
 \begin{table}[!htb]
 \setcounter{tablerownumbers}{0}
 \begin{tabularx}{\linewidth}{|r|X|X|l|}
 	\hline
 	\emph{No.} & \emph{Name} & \emph{Description} & \emph{Default Values} \\ \hline
-	\rownumber & env & Direct environment list to override environment tree. & None \\ \hline
-	\rownumber & path & Path to project location or to package within. & Current working directory \\ \hline
-	\rownumber & envtree & If set, load enviroenment files from directory tree. & True \\ \hline
 	\rownumber & osenv & If set, load os environ. & True \\ \hline
-	\rownumber & syntax & Expected structure of environment files. & XML \\ \hline
-	\rownumber & config\index{environ!config} & dictionary overriding default names for environment files. & '.projectenv':'.projectenv' \\ \cline{4-4} 
+	\rownumber & configure\index{environ!configure} & dictionary overriding default names for environment files. & '.projectenv':'.projectenv' \\ \cline{4-4} 
 	& & & 'packageenv':'packageenv' \\ \cline{4-4} 
 	& & & 'personalenv':'personalenv' \\ \cline{4-4}
 	& & & 'envtag':'environ' \\ \hline
+	\rownumber & trace\_env & List of enviornment variables to trace & None \\ \hline
+	\rownumber & logclass & If provided the string will be used for trace naming. & None \\ \hline
+	\rownumber & logger & If set to True and logclass=None, use Python getChild to set trace name. & None \\ \hline
+	
 \end{tabularx}
 \caption{Environ signature arguments}
 \label{table:environ-args}
@@ -66,24 +64,32 @@ Within derivative articles environment can be updated with environment variable 
 
 \subsection{Updating environment variables} \index{Update} \index{EnvVar}
 \begin{lstlisting}
-env.update([
+env.update_env([
   EnvVar(name='REJ_ALLOWED',cast='integer',value=0,input=True),
   EnvVar(name='OUT_FILE',value='${VAR_LOC}/summary.csv',cast='path', input=True),
   EnvVar(name='RATE',override='True',cast='integer',value=5,input=True)])
 \end{lstlisting}
 
-\paragraph{input} flag will set the variable with the value of parent environment, if defined.
+\paragraph {if input is set to True} the variable update will be ignored if the variable is defined in parent environment. If variable is not defined in parent environment, it will be defined and set to value from the command. 
+\paragraph {if input is set to False} update will overwrite variable value if variable exists, if variable is not defined it will define it.
 \paragraph{override} flags environment variable as changeable by derivative program articles.
 
 \subsection{Accessing environment variables} \index{Environment!Using}\index{get}
 \begin{lstlisting}
+import projenv 
+env=projenv.Environ()
+env.update_env([
+EnvVar(name='REJ_ALLOWED',cast='integer',value=0,input=True),
+EnvVar(name='OUT_FILE',value='${VAR_LOC}/summary.csv',cast='path', input=True),
+EnvVar(name='RATE',override='True',cast='integer',value=5,input=True)])
+
 ofile=env['OUT_FILE']
 rate=env.get('RATE')
 \end{lstlisting}
 
-In the first case, direct access, KeyError exception may be sent if variable name does not exist.
+In the first case(ofile variable), direct access, KeyError exception may be sent if variable name does not exist.
 
-In the second example, None value will be returned if not found. 
+In the second example(rate variable), None value will be returned if not found. 
 
 \chapter{Environment Tree} \index{Tree}
 Environment files are evaluated in hierarchical way.  The project tree and its packages are treated as nodes in a tree.  Each node can be evaluated and have its own representation of the environment.
@@ -262,5 +268,20 @@ Packageenv includes definitions for that are specific to the project or the pack
 \section{personalenv}\index{personaleenv}
 Personalenv provides means to personalize an environment.  Users can override packageenv or .projectenv parameters.
 you may want to exclude \em{personalenv} from your code repository (e.g., add personalenv.xml to .gitignore).  Otherwise, users wmay override each other personalizations. 
+
+\chapter{Installation, validation and example program}\index{Installation and validation}
+How to install, validate installation and use the package?
+
+\section{Installation}\index{Installation}
+
+To install run following command:
+pip install projenv
+
+\section{Validation}\index{Installation and validation!Validation} 
+Add instruction to run test.py and check unit test cases
+
+\section{Example}\index{Installation and validation!Example} 
+See example of the program using projenv on Github
+https://github.com/Acrisel/projenv/blob/master/environ/example/example.py
 
 \end{document}

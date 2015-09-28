@@ -28,7 +28,7 @@ if __name__ == '__main__':
     module_loc=os.path.join(root_loc,'lvl1', 'lvl2', 'lvl3')
     
     #TODO: Move to Test case by using assertRaises
-    module_env=Environ(osenv=True,trace_env=['T1','T18_input'], logclass="Unit_test")
+    module_env=Environ(osenv=True,trace_env=['T1','T18'], logclass="Unit_test")
     module_env.loads(path=module_loc)
     #print('POST ENVIRON:', repr(module_env))
     
@@ -105,7 +105,7 @@ if __name__ == '__main__':
             T16_value = module_env.get('T16_Tuple')
             T17_value = module_env.get('T17_Bool')
             T18_value = module_env.get('T18_Expr')
-            print("T18_value =",T18_value )
+            #print("T18_value =",T18_value )
             T11_int = isinstance( T11_value,int)
             T11_expected = 3
             T12_float = isinstance( T12_value,float)
@@ -159,5 +159,13 @@ if __name__ == '__main__':
             T19_value = module_env.get('T19_input')
             T19_expected = 10
             self.assertEqual(T19_value, T19_expected, "T19 is not correct - should not be updated by value in input_env")
-                     
+            
+        def test_personalenv(self):
+            #Test for variable overwrite in personalenv
+            #T20_personal is defined in both projectenv and personalenv
+            #We expect personalenv value to be used
+            T20_value = module_env.get('T20_personal')
+            T20_expected = 51
+            self.assertEqual(T20_value, T20_expected, "T20 is not correct - should be taken from personalenv of the main env")
+                         
 unittest.main()
