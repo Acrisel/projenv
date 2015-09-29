@@ -12,8 +12,7 @@ import logging
 x = os.environ.get('HOME','None')
 
 if x is 'None':
-    ##os.environ['HOME'] = os.environ.get('USERPROFILE','None')
-    os.environ['HOME'] = str('C:/Users/uri')
+    os.environ['HOME'] = str('C:/Users/my_home_path')
     
 
 
@@ -37,7 +36,7 @@ loc=[root_loc,
 module_loc=os.path.join(*loc)
 module_env=Environ(osenv=True, trace_env=['A1', ], logclass='Example') #, ulogger=logger)
 module_env.loads(path=module_loc)
-module_env.update_env(input_environ=input_environ)
+module_env.updates(input_environ=input_environ)
 
 #print('POST ENVIRON:', repr(module_env))
 module_env.log_env()

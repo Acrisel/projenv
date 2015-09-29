@@ -146,7 +146,7 @@ if __name__ == '__main__':
             T18_value = module_env.get('T18_input')
             T18_expected = 3
             self.assertEqual(T18_value, T18_expected, "T18 is not correct - should be taken from projenv of the main env")
-            module_env.update_env(input_env)
+            module_env.updates(input_env)
             T18_value = module_env.get('T18_input')
             T18_expected = 5
             self.assertEqual(T18_value, T18_expected, "T18 is not correct - should be updated by value in input_env")
