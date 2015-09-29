@@ -13,8 +13,8 @@ import logging
 from copy import copy, deepcopy
 import ast
 import inspect
-import traceback
 import sys
+import collections
 
 envlogger=logging.getLogger(__name__)
 
@@ -309,7 +309,7 @@ class Environ(object):
     def loads(self, env=None, path=None, envtree=True): 
         ''' Instantiates Environ object by setting its internal dictionary. 
         Args:
-            env: lest of EnvVar records to use as overrides.
+            env: list of EnvVar records to use as overrides.
             path: node path to start with.  Defaults to Current Working Directory.
             envtree: if set will attempt to load environment tree from root location to path
                 
@@ -335,15 +335,22 @@ class Environ(object):
             self.__build_env_tree(path=self.path)
             
         if env is not None:
-            env_type=type(env)
-            if env_type is list:
+            #env_type=type(env)
+            if isinstance(env, list):
                 env_items=env
-            elif env_type is OrderedDict or env_type is dict:
+            elif isinstance(env, collections.Mapping):
                 env_items=env.values()
             else:
-                env_items=None
+                raise EnvironError('Unknown env type: {}'.format(type(env).__name__))
             for var in env_items:
-                self.environ[var.name]=var.value
+                try:
+                    self.environ[var.name]=var.value
+                except Exception as e:
+                    if not isinstance(var, EnvVar):
+                        raise EnvironError('Only EnvVar are allowed in "env", but received {}'.format(type(var).__name__))
+                    else:
+                        raise EnvironError('Unknown error when assigning vars from env; {}'.repr(e))
+                    
         return self
         
     def __getitem__(self, key):
@@ -397,7 +404,7 @@ class Environ(object):
                     
                     envvar.rest['value']=envvar.value
                     try:
-                        envvar.value=cast_value(target_type=envvar.cast,
+                        envvar.value=cast_value(name=envvar.name, target_type=envvar.cast,
                                                 attrib=envvar.rest,logclass=self.logclass)
                         envvar.rest=None
                     except KeyError:
@@ -457,7 +464,7 @@ class Environ(object):
                 value=envvar.value
                 cast=envvar.cast
                 try:
-                    envvar.value=cast_value(target_type=envvar.cast,
+                    envvar.value=cast_value(name=envvar.name, target_type=envvar.cast,
                                             attrib=envvar.rest,logclass=self.logclass)
                     envvar.rest=None
                 except KeyError:

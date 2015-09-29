@@ -28,7 +28,7 @@ if __name__ == '__main__':
     module_loc=os.path.join(root_loc,'lvl1', 'lvl2', 'lvl3')
     
     #TODO: Move to Test case by using assertRaises
-    module_env=Environ(osenv=True,trace_env=['T1','T18'], logclass="Unit_test")
+    module_env=Environ(osenv=True,trace_env=['T20_personal'], logclass="Unit_test")
     module_env.loads(path=module_loc)
     #print('POST ENVIRON:', repr(module_env))
     
