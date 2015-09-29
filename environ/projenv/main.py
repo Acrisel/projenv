@@ -594,6 +594,11 @@ class Environ(object):
         
     @classmethod
     def cmd_line_env(cls, env):
+        ''' This function is deprecated, please use commandline instead '''
+        return cls.commandline(env=env)
+        
+    @classmethod
+    def commandline(cls, env):
         environ=Environ(osenv=False)
         if env is not None:
             for item in env:
@@ -617,7 +622,11 @@ class Environ(object):
                 var.name=prefix_add+var.name
         return new_var if new_var is not None else var          
             
-    def update_env(self, input_environ, force_override=False, prefix_replace=None, prefix_add=None, prefix_exclusicve=True): 
+    def update_env(self, *args, **kwargs):
+        ''' This method is deprecated.  it is replaced by updates()'''
+        return self.updates(*args, **kwargs) 
+    
+    def updates(self, input_environ, force_override=False, prefix_replace=None, prefix_add=None, prefix_exclusicve=True): 
         ''' Update override-able environ with values from overrides
             plus adding new vars into environ. 
             The host environment can have two type of parameters.
