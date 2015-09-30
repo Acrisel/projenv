@@ -27,7 +27,7 @@ Description: =======
         The Acrisel Team.
 Keywords: project,virtualenv,parameters
 Platform: UNKNOWN
-Classifier: Development Status :: 4 - Beta
+Classifier: Development Status :: 5 - Production/Stable
 Classifier: Environment :: Other Environment
 Classifier: Framework :: Project Settings and Operation
 Classifier: Intended Audience :: Developers
