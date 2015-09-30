@@ -81,7 +81,7 @@ Updating environment variables
 
 .. code-block:: python
 
-  env.update_env([
+  env.updates([
     EnvVar(name='REJ_ALLOWED',cast='integer',value=0,input=True),
     EnvVar(name='OUT_FILE',value='${VAR_LOC}/summary.csv',cast='path', input=True),
     EnvVar(name='RATE',override='True',cast='integer',value=5,input=True)])
@@ -99,7 +99,7 @@ Accessing environment variables
 
    import projenv
    env=projenv.Environ()
-   env.update_env([
+   env.updates([
    EnvVar(name='REJ_ALLOWED',cast='integer',value=0,input=True),
    EnvVar(name='OUT_FILE',value='${VAR_LOC}/summary.csv',cast='path', input=True),
    EnvVar(name='RATE',override='True',cast='integer',value=5,input=True)])
@@ -228,5 +228,5 @@ Docs are updated rigorously. If you find any problems in the docs, or think they
 should be clarified in any way, please take 30 seconds to fill out a ticket in
 github or send us email at support@acrisel.com
 
-To get more help or to provide suggestions you can send as email too:
+To get more help or to provide suggestions you can send as email to:
 arnon@acrisel.com uri@acrisel.com
