@@ -1,8 +1,6 @@
-namedlist==1.7
-python-dateutil==2.4.2
-six==1.9.0
-
-[test]
-
+python-dateutil>=2.4.2
+namedlist>=1.7
 
 [dev]
+
+[test]
