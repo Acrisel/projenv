@@ -3,8 +3,7 @@ Created on Apr 26, 2015
 
 @author: uri
 '''
-from projenv  import Environ
-from projenv import EnvVar
+from projenv import Environ, EnvVar
 import os.path
 
 

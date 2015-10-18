@@ -1,0 +1,611 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.12: http://docutils.sourceforge.net/" />
+<title></title>
+<style type="text/css">
+
+/*
+:Author: David Goodger (goodger@python.org)
+:Id: $Id: html4css1.css 7614 2013-02-21 15:55:51Z milde $
+:Copyright: This stylesheet has been placed in the public domain.
+
+Default cascading style sheet for the HTML output of Docutils.
+
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+customize this style sheet.
+*/
+
+/* used to remove borders from tables and images */
+.borderless, table.borderless td, table.borderless th {
+  border: 0 }
+
+table.borderless td, table.borderless th {
+  /* Override padding for "table.docutils td" with "! important".
+     The right padding separates the table cells. */
+  padding: 0 0.5em 0 0 ! important }
+
+.first {
+  /* Override more specific margin styles with "! important". */
+  margin-top: 0 ! important }
+
+.last, .with-subtitle {
+  margin-bottom: 0 ! important }
+
+.hidden {
+  display: none }
+
+a.toc-backref {
+  text-decoration: none ;
+  color: black }
+
+blockquote.epigraph {
+  margin: 2em 5em ; }
+
+dl.docutils dd {
+  margin-bottom: 0.5em }
+
+object[type="image/svg+xml"], object[type="application/x-shockwave-flash"] {
+  overflow: hidden;
+}
+
+/* Uncomment (and remove this text!) to get bold-faced definition list terms
+dl.docutils dt {
+  font-weight: bold }
+*/
+
+div.abstract {
+  margin: 2em 5em }
+
+div.abstract p.topic-title {
+  font-weight: bold ;
+  text-align: center }
+
+div.admonition, div.attention, div.caution, div.danger, div.error,
+div.hint, div.important, div.note, div.tip, div.warning {
+  margin: 2em ;
+  border: medium outset ;
+  padding: 1em }
+
+div.admonition p.admonition-title, div.hint p.admonition-title,
+div.important p.admonition-title, div.note p.admonition-title,
+div.tip p.admonition-title {
+  font-weight: bold ;
+  font-family: sans-serif }
+
+div.attention p.admonition-title, div.caution p.admonition-title,
+div.danger p.admonition-title, div.error p.admonition-title,
+div.warning p.admonition-title, .code .error {
+  color: red ;
+  font-weight: bold ;
+  font-family: sans-serif }
+
+/* Uncomment (and remove this text!) to get reduced vertical space in
+   compound paragraphs.
+div.compound .compound-first, div.compound .compound-middle {
+  margin-bottom: 0.5em }
+
+div.compound .compound-last, div.compound .compound-middle {
+  margin-top: 0.5em }
+*/
+
+div.dedication {
+  margin: 2em 5em ;
+  text-align: center ;
+  font-style: italic }
+
+div.dedication p.topic-title {
+  font-weight: bold ;
+  font-style: normal }
+
+div.figure {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+div.footer, div.header {
+  clear: both;
+  font-size: smaller }
+
+div.line-block {
+  display: block ;
+  margin-top: 1em ;
+  margin-bottom: 1em }
+
+div.line-block div.line-block {
+  margin-top: 0 ;
+  margin-bottom: 0 ;
+  margin-left: 1.5em }
+
+div.sidebar {
+  margin: 0 0 0.5em 1em ;
+  border: medium outset ;
+  padding: 1em ;
+  background-color: #ffffee ;
+  width: 40% ;
+  float: right ;
+  clear: right }
+
+div.sidebar p.rubric {
+  font-family: sans-serif ;
+  font-size: medium }
+
+div.system-messages {
+  margin: 5em }
+
+div.system-messages h1 {
+  color: red }
+
+div.system-message {
+  border: medium outset ;
+  padding: 1em }
+
+div.system-message p.system-message-title {
+  color: red ;
+  font-weight: bold }
+
+div.topic {
+  margin: 2em }
+
+h1.section-subtitle, h2.section-subtitle, h3.section-subtitle,
+h4.section-subtitle, h5.section-subtitle, h6.section-subtitle {
+  margin-top: 0.4em }
+
+h1.title {
+  text-align: center }
+
+h2.subtitle {
+  text-align: center }
+
+hr.docutils {
+  width: 75% }
+
+img.align-left, .figure.align-left, object.align-left {
+  clear: left ;
+  float: left ;
+  margin-right: 1em }
+
+img.align-right, .figure.align-right, object.align-right {
+  clear: right ;
+  float: right ;
+  margin-left: 1em }
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-left {
+  text-align: left }
+
+.align-center {
+  clear: both ;
+  text-align: center }
+
+.align-right {
+  text-align: right }
+
+/* reset inner alignment in figures */
+div.align-right {
+  text-align: inherit }
+
+/* div.align-center * { */
+/*   text-align: left } */
+
+ol.simple, ul.simple {
+  margin-bottom: 1em }
+
+ol.arabic {
+  list-style: decimal }
+
+ol.loweralpha {
+  list-style: lower-alpha }
+
+ol.upperalpha {
+  list-style: upper-alpha }
+
+ol.lowerroman {
+  list-style: lower-roman }
+
+ol.upperroman {
+  list-style: upper-roman }
+
+p.attribution {
+  text-align: right ;
+  margin-left: 50% }
+
+p.caption {
+  font-style: italic }
+
+p.credits {
+  font-style: italic ;
+  font-size: smaller }
+
+p.label {
+  white-space: nowrap }
+
+p.rubric {
+  font-weight: bold ;
+  font-size: larger ;
+  color: maroon ;
+  text-align: center }
+
+p.sidebar-title {
+  font-family: sans-serif ;
+  font-weight: bold ;
+  font-size: larger }
+
+p.sidebar-subtitle {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+p.topic-title {
+  font-weight: bold }
+
+pre.address {
+  margin-bottom: 0 ;
+  margin-top: 0 ;
+  font: inherit }
+
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
+  margin-left: 2em ;
+  margin-right: 2em }
+
+pre.code .ln { color: grey; } /* line numbers */
+pre.code, code { background-color: #eeeeee }
+pre.code .comment, code .comment { color: #5C6576 }
+pre.code .keyword, code .keyword { color: #3B0D06; font-weight: bold }
+pre.code .literal.string, code .literal.string { color: #0C5404 }
+pre.code .name.builtin, code .name.builtin { color: #352B84 }
+pre.code .deleted, code .deleted { background-color: #DEB0A1}
+pre.code .inserted, code .inserted { background-color: #A3D289}
+
+span.classifier {
+  font-family: sans-serif ;
+  font-style: oblique }
+
+span.classifier-delimiter {
+  font-family: sans-serif ;
+  font-weight: bold }
+
+span.interpreted {
+  font-family: sans-serif }
+
+span.option {
+  white-space: nowrap }
+
+span.pre {
+  white-space: pre }
+
+span.problematic {
+  color: red }
+
+span.section-subtitle {
+  /* font-size relative to parent (h1..h6 element) */
+  font-size: 80% }
+
+table.citation {
+  border-left: solid 1px gray;
+  margin-left: 1px }
+
+table.docinfo {
+  margin: 2em 4em }
+
+table.docutils {
+  margin-top: 0.5em ;
+  margin-bottom: 0.5em }
+
+table.footnote {
+  border-left: solid 1px black;
+  margin-left: 1px }
+
+table.docutils td, table.docutils th,
+table.docinfo td, table.docinfo th {
+  padding-left: 0.5em ;
+  padding-right: 0.5em ;
+  vertical-align: top }
+
+table.docutils th.field-name, table.docinfo th.docinfo-name {
+  font-weight: bold ;
+  text-align: left ;
+  white-space: nowrap ;
+  padding-left: 0 }
+
+/* "booktabs" style (no vertical lines) */
+table.docutils.booktabs {
+  border: 0px;
+  border-top: 2px solid;
+  border-bottom: 2px solid;
+  border-collapse: collapse;
+}
+table.docutils.booktabs * {
+  border: 0px;
+}
+table.docutils.booktabs th {
+  border-bottom: thin solid;
+  text-align: left;
+}
+
+h1 tt.docutils, h2 tt.docutils, h3 tt.docutils,
+h4 tt.docutils, h5 tt.docutils, h6 tt.docutils {
+  font-size: 100% }
+
+ul.auto-toc {
+  list-style-type: none }
+
+</style>
+</head>
+<body>
+<div class="document">
+
+
+<p>projenv provides mechanism for project to manage parameters for programs in
+hierarchical way.</p>
+<div class="section" id="overview">
+<h1>Overview</h1>
+<p>Environment is a special type of dictionary, holding parameters used by parts.
+There are multiple levels and types of environments playing part in program
+run. Environment evaluation process walks the project tree from top to program
+location.  In each non-root node (package branch), there could be one file
+defining nodes of environment. In root note there could be two types. In
+addition ability  overwrite variables in personal setting is supported using
+personalenv file.</p>
+</div>
+<div class="section" id="definitions">
+<h1>Definitions</h1>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="17%" />
+<col width="74%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Number</th>
+<th class="head">Name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>1</td>
+<td>.projectenv</td>
+<td>read-only project level environment variables; also
+identifies project root location.</td>
+</tr>
+<tr><td>2</td>
+<td>packageenv</td>
+<td>addon environment for given read-only environment
+in local or upper environments.</td>
+</tr>
+<tr><td>3</td>
+<td>personalenv</td>
+<td>personal overrides for project or package
+environment. It may include only overrides.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="program-interface">
+<h1>Program Interface</h1>
+<p>Within programs there are three types of access points to the environment variables.
+To get projenv dictionary, program can perform the following command:</p>
+<ol class="arabic simple">
+<li>Loading environment variables from project structure</li>
+<li>Updating environment variable in program</li>
+<li>Accessing environment variables</li>
+</ol>
+</div>
+<div class="section" id="loading-environment-variables">
+<h1>Loading environment variables</h1>
+<pre class="code python literal-block">
+<span class="keyword namespace">import</span> <span class="name namespace">projenv</span>
+<span class="name">env</span><span class="operator">=</span><span class="name">projenv</span><span class="operator">.</span><span class="name">Environ</span><span class="punctuation">()</span>
+</pre>
+<p>When Program evaluates environment, it starts with root location going down the tree up to and including package environment of Program location.</p>
+<p>Environ class __init__ has the following signature</p>
+<pre class="literal-block">
+Environ(self, osenv=True, configure=None, trace_env=None, logclass=None, logger=None)
+</pre>
+<table border="1" class="docutils">
+<colgroup>
+<col width="11%" />
+<col width="57%" />
+<col width="32%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Name</th>
+<th class="head">Description</th>
+<th class="head">Default Values</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>osenv</td>
+<td>If set, load os environ.</td>
+<td>True</td>
+</tr>
+<tr><td>configure</td>
+<td>Dictionary overriding default names for environment
+files.</td>
+<td><dl class="first last docutils">
+<dt>.projectenv <span class="classifier-delimiter">:</span> <span class="classifier">.projectenv</span></dt>
+<dd>packageenv : packageenv
+personalenv : personalenv
+envtag : environ</dd>
+</dl>
+</td>
+</tr>
+<tr><td>trace_env</td>
+<td>List of enviornment variables to trace</td>
+<td>None</td>
+</tr>
+<tr><td>logclass</td>
+<td>If provided the string will be used for trace naming.</td>
+<td>None</td>
+</tr>
+<tr><td>logger</td>
+<td>If set to True and logclass=None, use Python
+getChild to set trace name.</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<p>In addition to file name overrides, configuration dictionary can provide syntax used in these files and the environment root
+tag under which environment variables are defined.</p>
+</div>
+<div class="section" id="updating-environment-variables">
+<h1>Updating environment variables</h1>
+<pre class="code python literal-block">
+<span class="name">env</span><span class="operator">.</span><span class="name">updates</span><span class="punctuation">([</span>
+  <span class="name">EnvVar</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string">'REJ_ALLOWED'</span><span class="punctuation">,</span><span class="name">cast</span><span class="operator">=</span><span class="literal string">'integer'</span><span class="punctuation">,</span><span class="name">value</span><span class="operator">=</span><span class="literal number integer">0</span><span class="punctuation">,</span><span class="name builtin">input</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">),</span>
+  <span class="name">EnvVar</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string">'OUT_FILE'</span><span class="punctuation">,</span><span class="name">value</span><span class="operator">=</span><span class="literal string">'${VAR_LOC}/summary.csv'</span><span class="punctuation">,</span><span class="name">cast</span><span class="operator">=</span><span class="literal string">'path'</span><span class="punctuation">,</span> <span class="name builtin">input</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">),</span>
+  <span class="name">EnvVar</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string">'RATE'</span><span class="punctuation">,</span><span class="name">override</span><span class="operator">=</span><span class="literal string">'True'</span><span class="punctuation">,</span><span class="name">cast</span><span class="operator">=</span><span class="literal string">'integer'</span><span class="punctuation">,</span><span class="name">value</span><span class="operator">=</span><span class="literal number integer">5</span><span class="punctuation">,</span><span class="name builtin">input</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)])</span>
+</pre>
+<p><strong>If input is set to True</strong> the variable update will be ignored if the variable is defined in parent environment. If variable is not defined in parent environment, it will be defined and set to value from the command.
+<strong>If input is set to False</strong> update will overwrite variable value if variable exists, if variable is not defined it will define it.
+<strong>Override</strong> flags environment variable as changeable by derivative program articles.</p>
+</div>
+<div class="section" id="accessing-environment-variables">
+<h1>Accessing environment variables</h1>
+<pre class="code python literal-block">
+<span class="keyword namespace">import</span> <span class="name namespace">projenv</span>
+<span class="name">env</span><span class="operator">=</span><span class="name">projenv</span><span class="operator">.</span><span class="name">Environ</span><span class="punctuation">()</span>
+<span class="name">env</span><span class="operator">.</span><span class="name">updates</span><span class="punctuation">([</span>
+<span class="name">EnvVar</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string">'REJ_ALLOWED'</span><span class="punctuation">,</span><span class="name">cast</span><span class="operator">=</span><span class="literal string">'integer'</span><span class="punctuation">,</span><span class="name">value</span><span class="operator">=</span><span class="literal number integer">0</span><span class="punctuation">,</span><span class="name builtin">input</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">),</span>
+<span class="name">EnvVar</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string">'OUT_FILE'</span><span class="punctuation">,</span><span class="name">value</span><span class="operator">=</span><span class="literal string">'${VAR_LOC}/summary.csv'</span><span class="punctuation">,</span><span class="name">cast</span><span class="operator">=</span><span class="literal string">'path'</span><span class="punctuation">,</span> <span class="name builtin">input</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">),</span>
+<span class="name">EnvVar</span><span class="punctuation">(</span><span class="name">name</span><span class="operator">=</span><span class="literal string">'RATE'</span><span class="punctuation">,</span><span class="name">override</span><span class="operator">=</span><span class="literal string">'True'</span><span class="punctuation">,</span><span class="name">cast</span><span class="operator">=</span><span class="literal string">'integer'</span><span class="punctuation">,</span><span class="name">value</span><span class="operator">=</span><span class="literal number integer">5</span><span class="punctuation">,</span><span class="name builtin">input</span><span class="operator">=</span><span class="name builtin pseudo">True</span><span class="punctuation">)])</span>
+
+<span class="name">ofile</span><span class="operator">=</span><span class="name">env</span><span class="punctuation">[</span><span class="literal string">'OUT_FILE'</span><span class="punctuation">]</span>
+<span class="name">rate</span><span class="operator">=</span><span class="name">env</span><span class="operator">.</span><span class="name">get</span><span class="punctuation">(</span><span class="literal string">'RATE'</span><span class="punctuation">)</span>
+</pre>
+<p>In the first case(ofile variable), direct access, KeyError exception may be sent if variable name does not exist.
+In the second example(rate variable), None value will be returned if not found.</p>
+</div>
+<div class="section" id="environment-tree">
+<h1>Environment Tree</h1>
+<p>Environment files are evaluated in hierarchical way.  The project tree and its packages are treated as nodes in a tree.
+Each node can be evaluated and have its own representation of the environment.</p>
+<div class="section" id="single-project-environment-tree">
+<h2>Single Project Environment Tree</h2>
+<dl class="docutils">
+<dt>At each node, environment is evaluated in the following sequence:</dt>
+<dd><ol class="first last arabic simple">
+<li>.projectenv, if available, is read and set.</li>
+<li>Next packageenv, if available, is read and set.</li>
+<li>Finally, personalenv overrides, if available, is read and set.</li>
+</ol>
+</dd>
+</dl>
+<p>Example environment tree in a project.
+Program A will include environment setting of Project and Package A locations.
+Program AB will include Program A, Package A and Package AB accordingly.</p>
+<blockquote>
+<dl class="docutils">
+<dt>Project</dt>
+<dd><ul class="first last">
+<li><p class="first">.projectenv</p>
+</li>
+<li><p class="first">packageenv</p>
+</li>
+<li><p class="first">personalenv</p>
+</li>
+<li><p class="first">Program A</p>
+</li>
+<li><dl class="first docutils">
+<dt>Package A</dt>
+<dd><ul class="first last">
+<li><p class="first">packageenv</p>
+</li>
+<li><p class="first">personalenv</p>
+</li>
+<li><dl class="first docutils">
+<dt>Package AB</dt>
+<dd><ul class="first last simple">
+<li>packageenv</li>
+<li>personalenv</li>
+<li>Program AB</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</blockquote>
+</div>
+<div class="section" id="example-for-project-environment-file">
+<h2>Example for project environment file</h2>
+<p>Core environment is tagged under &lt;environ&gt;.
+Environ mechanism would look for this tag.  Once found, it would evaluate its content as environment directive.</p>
+<pre class="code xml literal-block">
+<span class="name tag">&lt;environment&gt;</span>
+  <span class="name tag">&lt;environ&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'AC_WS_LOC'</span> <span class="name attribute">value=</span><span class="literal string">'${HOME}/sand/myproject'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span><span class="name tag">/&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'AC_ENV_NAME'</span> <span class="name attribute">value=</span><span class="literal string">'test'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span><span class="name tag">/&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'AC_VAR_BASE'</span> <span class="name attribute">value=</span><span class="literal string">'${HOME}/var/data/'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span><span class="name tag">/&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'AC_LOG_LEVEL'</span> <span class="name attribute">value=</span><span class="literal string">'DEBUG'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span><span class="name tag">/&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'AC_LOG_STDOUT'</span> <span class="name attribute">value=</span><span class="literal string">'True'</span> <span class="name attribute">override=</span><span class="literal string">'True'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span> <span class="name attribute">cast=</span><span class="literal string">'boolean'</span><span class="name tag">/&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'AC_LOG_STDOUT_LEVEL'</span> <span class="name attribute">value=</span><span class="literal string">'INFO'</span> <span class="name attribute">override=</span><span class="literal string">'True'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span><span class="name tag">/&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'AC_LOG_STDERR'</span> <span class="name attribute">value=</span><span class="literal string">'True'</span> <span class="name attribute">override=</span><span class="literal string">'True'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span> <span class="name attribute">cast=</span><span class="literal string">'boolean'</span><span class="name tag">/&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'AC_LOG_STDERR_LEVEL'</span> <span class="name attribute">value=</span><span class="literal string">'CRITICAL'</span> <span class="name attribute">override=</span><span class="literal string">'True'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span><span class="name tag">/&gt;</span>
+  <span class="name tag">&lt;/environ&gt;</span>
+<span class="name tag">&lt;/environment&gt;</span>
+</pre>
+<p>Note: &lt;environment&gt; tag is to provide enclosure to environ.
+Environ mechanism is not depending on its existent per se.  However, some kind on enclosure is required;  &lt;environ&gt; can not be in top level of the XML.</p>
+</div>
+<div class="section" id="example-of-multiple-project-environment-tree">
+<h2>Example of Multiple Project Environment Tree</h2>
+<dl class="docutils">
+<dt>At each import, environment is evaluated in the following sequence:</dt>
+<dd><ol class="first last arabic simple">
+<li>First get the node representation of imported path.</li>
+<li>Evaluate it recursively (loading imports).</li>
+<li>Finally, insert the resulted imported map instead of the import directive (flat).</li>
+</ol>
+</dd>
+</dl>
+<p>Project A: /Users/me/projs/proja/.projectenv.xml</p>
+<pre class="code xml literal-block">
+<span class="name tag">&lt;environment&gt;</span>
+  <span class="name tag">&lt;environ&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'FILE_LOC'</span> <span class="name attribute">value=</span><span class="literal string">'/Users/me/tmp/'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span><span class="name tag">/&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'FILE_NAME'</span> <span class="name attribute">value=</span><span class="literal string">'aname'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span><span class="name tag">/&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'FILE_PATH'</span> <span class="name attribute">value=</span><span class="literal string">'${FILE_LOC}${FILE_NAME}'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span><span class="name tag">/&gt;</span>
+  <span class="name tag">&lt;/environ&gt;</span>
+<span class="name tag">&lt;/environment&gt;</span>
+</pre>
+<p>Project B: /Users/me/projs/projb/.projectenv.xml'</p>
+<pre class="code xml literal-block">
+<span class="name tag">&lt;environment&gt;</span>
+  <span class="name tag">&lt;environ&gt;</span>
+    <span class="name tag">&lt;import</span> <span class="name attribute">name=</span><span class="literal string">'proja'</span> <span class="name attribute">path=</span><span class="literal string">'/Users/me/projs/proja/.projectenv.xml'</span><span class="name tag">/&gt;</span>
+    <span class="name tag">&lt;var</span> <span class="name attribute">name=</span><span class="literal string">'FILE_NAME'</span> <span class="name attribute">value=</span><span class="literal string">'bname'</span> <span class="name attribute">export=</span><span class="literal string">'True'</span><span class="name tag">/&gt;</span>
+  <span class="name tag">&lt;/environ&gt;</span>
+<span class="name tag">&lt;/environment&gt;</span>
+</pre>
+<p>The example above shows import project directive within project B's environment.  In project B's context, FILE_PATH variable will result with
+the value /Users/me/tmp/bname.</p>
+<p><strong>Recursive</strong> inclusion of environments (recursive import statement) would cause evaluation of environment variables to be loaded recursively.
+Consideration is given to overrides in post import environments.</p>
+<p><strong>Note</strong>:import path can only include environment variables that are in the OS level pre-eveluation.</p>
+</div>
+</div>
+<div class="section" id="additional-resources">
+<h1>Additional resources</h1>
+<p>Documentation is in the &quot;docs&quot; directory and online at the design and use of projenv.</p>
+<p><strong>example</strong> and <strong>tests</strong> directory shows ways to use projenv.Environ . Both directories are available to view and download as part of source code
+on GitHub. <a class="reference external" href="https://github.com/Acrisel/projenv">GitHub_link</a></p>
+<p>Docs are updated rigorously. If you find any problems in the docs, or think they
+should be clarified in any way, please take 30 seconds to fill out a ticket in
+github or send us email at <a class="reference external" href="mailto:support&#64;acrisel.com">support&#64;acrisel.com</a></p>
+<p>To get more help or to provide suggestions you can send as email to:
+<a class="reference external" href="mailto:arnon&#64;acrisel.com">arnon&#64;acrisel.com</a> <a class="reference external" href="mailto:uri&#64;acrisel.com">uri&#64;acrisel.com</a></p>
+</div>
+</div>
+</body>
+</html>
