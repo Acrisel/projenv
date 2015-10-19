@@ -65,7 +65,9 @@ Thumbs.db
 *.save
 *.sav
 *.bak
+*.back
 *.orig
+*.original
 *~
 
 # Eclipse #
