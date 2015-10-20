@@ -1,7 +1,6 @@
 python-dateutil>=2.4.2
 namedlist>=1.7
 
-[test]
-
-
 [dev]
+
+[test]
