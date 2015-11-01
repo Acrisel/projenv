@@ -28,7 +28,7 @@ EnvVar=namedlist('EnvVar',
                   ('override',True),
                   ('input', False),
                   ('cast', 'string'),
-                  ('export', False),
+                  ('export', True),
                   ('encrypt', ''),
                   ('rest', None),
                   ('comment', None),
@@ -605,7 +605,10 @@ class Environ(object):
                 parts=item.split('=')
                 name=parts[0]
                 value='='.join(parts[1:])
-                environ.environ[name]=EnvVar(name=name, value=value)
+                environ.environ[name]=EnvVar(name=name, value=value, 
+                                             override=True, export=True)
+                os.environ[name]=value
+                    
         return environ
     
     def __make_var(self, var, prefix_replace=None, prefix_add=None, prefix_exclusicve=True):
@@ -720,11 +723,12 @@ class Environ(object):
         return env
                 
     def log_env(self, log=None):
-        mylog=lambda x: print(x) if log is None else log
+        if log is None:
+            log=lambda x: print(x)  
         msg=map(lambda x: '{k}={v} ({t})'.format(k=x, v=self.environ[x].value, 
                                                  t=type(self.environ[x].value).__name__), 
                 sorted(self.environ.keys()))
-        mylog('Environ Begin:\n\t'+'\n\t'.join(msg)+'\nEnviron End.')
+        log('Environ Begin:\n\t'+'\n\t'.join(msg)+'\nEnviron End.')
         
     def __clean_env_var(self, var):
         default=DEFAULT_ENVVAR
