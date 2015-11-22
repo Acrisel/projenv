@@ -23,7 +23,7 @@ if "install" in sys.argv:
             break
 
 setup_info={'name': 'projenv',
- 'version': '1.1.2',
+ 'version': '1.1.3',
  'url': 'https://github.com/Acrisel/projenv',
  'author': 'Acrisel Team',
  'author_email': 'support@acrisel.com',
