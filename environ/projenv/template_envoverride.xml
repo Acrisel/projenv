@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<environment>
+  <environ>
+    <var name='${__TEMPLATE_PREFIX__}PROJ_LOC' value='${__TEMPLATE_PROJ_LOC__}/' export='True' virtual='True'/>
+    <var name='ENV_NAME' value='${__TEMPLATE_ENV_NAME__}' export='True'/>
+  </environ>
+</environment>
