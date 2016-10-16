@@ -4,6 +4,46 @@ import sys
 from setuptools import setup
 from distutils.sysconfig import get_python_lib
 
+''' 
+is the Python package in your project. It's the top-level folder containing the 
+__init__.py module that should be in the same directory as your setup.py file
+/-
+  |- README.rst
+  |- setup.py
+  |- dogs 
+     |- __init__.py
+     |- catcher.py
+'''
+PACKAGE = "projenv" 
+
+'''
+NAME is usually similar to or the same as your PACKAGE name but can be whatever you want. 
+The NAME is what people will refer to your software as, the name under which your 
+software is listed in PyPI and—more importantly—under which users will install it 
+(for example, pip install NAME).
+'''
+NAME = PACKAGE
+
+'''
+DESCRIPTION is just a short description of your project. A sentence will suffice.
+'''
+DESCRIPTION = '''ProjEnv allows the use of hierarchical parameter structure for projects.'''
+
+'''
+AUTHOR and AUTHOR_EMAIL are what they sound like: your name and email address. This 
+information is optional, but it's good practice to supply an email address if people 
+want to reach you about the project.
+'''
+AUTHOR = 'Acrisel Team'
+AUTHOR_EMAIL = 'support@acrisel.com'
+
+'''
+URL is the URL for the project. This URL may be a project website, the Github repository, 
+or whatever URL you want. Again, this information is optional.
+'''
+URL = 'https://github.com/Acrisel/projenv'
+VERSION = __import__(PACKAGE).__version__
+
 # Warn if we are installing over top of an existing installation. This can
 # cause issues where files that were deleted from a more recent Accord are
 # still present in site-packages. See #18115.
@@ -14,6 +54,7 @@ if "install" in sys.argv:
         # We have to try also with an explicit prefix of /usr/local in order to
         # catch Debian's custom user site-packages directory.
         lib_paths.append(get_python_lib(prefix="/usr/local"))
+        
     for lib_path in lib_paths:
         existing_path = os.path.abspath(os.path.join(lib_path, 'projenv'))
         if os.path.exists(existing_path):
@@ -22,41 +63,16 @@ if "install" in sys.argv:
             overlay_warning = True
             break
 
-setup_info={'name': 'projenv',
- 'version': '1.1.3',
- 'url': 'https://github.com/Acrisel/projenv',
- 'author': 'Acrisel Team',
- 'author_email': 'support@acrisel.com',
- 'description': 'ProjEnv allows the use of hierarchical parameter structure '
-                'for projects.',
- 'long_description': '=======\n'
-                     'ProjEnv\n'
-                     '=======\n'
-                     '\n'
-                     'projenv provides mechanism for project to manage '
-                     'parameters for programs in hierarchical way.\n'
-                     '\n'
-                     'Projects can use Environ xml files to define '
-                     'parameters in any package node.  \n'
-                     'Then, in programs, environment can be loaded and used '
-                     'as Environ dictionary.\n'
-                     '\n'
-                     'os.environ can be also used when parameters are '
-                     'defined as exported to the environment.\n'
-                     '\n'
-                     'projenv mechanism supports override of environment '
-                     'values in package hierarcy starting from \n'
-                     'project root folder to the node evaluated.\n'
-                     '\n'
-                     'More information in docs/design document.\n'
-                     '\n'
-                     'We hope you would enjoy using this package.  Let us '
-                     'know your experiecne.\n'
-                     '\n'
-                     'The Acrisel Team.',
+setup_info={'name': NAME,
+ 'version': VERSION,
+ 'url': URL,
+ 'author': AUTHOR,
+ 'author_email': AUTHOR_EMAIL,
+ 'description': DESCRIPTION,
+ 'long_description': open("README.rst", "r").read(),
  'license': 'MIT',
  'keywords': 'project, virtualenv, parameters',
- 'packages': ['projenv'],
+ 'packages': [PACKAGE],
  'install_requires': ['python-dateutil>=2.4.2',
                       'namedlist>=1.7'],
  'extras_require': {'dev': [], 'test': []},

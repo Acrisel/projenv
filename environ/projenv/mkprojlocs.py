@@ -6,11 +6,10 @@ Created on Apr 20, 2015
 @author: arnon
 '''
 
-import os.path
 import os
 from string import Template
-
 import argparse
+from .projenv import Environ  
 
 def abort(msg):
     print(msg)
@@ -20,38 +19,33 @@ def abort(msg):
 def get_proj_loc(args):
     if not args.source_loc:
         while True:
-            ac_proj_loc=input("Enter project sand-box location: ")
-            ac_proj_loc=ac_proj_loc.replace(' ','')
-            if not ac_proj_loc:
+            proj_loc=input("Enter project location: ")
+            proj_loc=proj_loc.replace(' ','')
+            if not proj_loc:
                 print('Your entry must not include whitespace.')
                 continue
-            if not os.path.exists(ac_proj_loc):
+            if not os.path.exists(proj_loc):
                 ans=input("Project location entered don't exist, must provide existing project")
                 continue
             else:
-                projectenv=os.path.join(ac_proj_loc, '.projectev.xml')
+                projectenv=os.path.join(proj_loc, '.envpackage.xml')
                 if os.path.exists(projectenv):
                     break
             continue
     else:
-        ac_proj_loc=args.source_loc
-    return ac_proj_loc    
+        proj_loc=args.source_loc
+    return proj_loc    
     
 def mk_proj_locs(projectloc):
-    
-    try:
-        import aclib.environ as environ 
-    except ImportError as e:
-        abort('mk_proj_locs: import error : {}'.format(repr(e)))  
 
     ans=input("create project locations? [Yes]: ")
     ans=ans.replace(' ', '').lower()
     ans='yes' if not ans else ans
     if ans in ['y', 'yes']:
         print('Creating project locations:')   
-        env=environ.Environ().loads(path=projectloc)
+        env=Environ().loads(path=projectloc)
         try:
-            prefix=env['AC_PROJ_PREFIX']
+            prefix=env['PROJ_PREFIX']
         except KeyError:
             abort('Failed to find environment variable AC_PROJ_PREFIX; should have been found in {}.projectenv.xml'.format(projectloc))
         items=env.items()

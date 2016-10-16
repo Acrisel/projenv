@@ -14,8 +14,6 @@ x = os.environ.get('HOME','None')
 if x is 'None':
     os.environ['HOME'] = str('C:/Users/my_home_path')
     
-
-
 logger=logging.getLogger('Example')
 
 handler = logging.StreamHandler()
@@ -27,14 +25,16 @@ logger.setLevel(logging.DEBUG)
 input_environ=[EnvVar(name='A1',value='133', input=True),]
 
 root_loc=os.path.dirname(__file__)
-loc=[root_loc, 
-     'envexample', 
-     'lvl1', 
-     'lvl2', 
-     'lvl3',
-     ]
+
+loc=[root_loc, 'penv1', 'lvl1', 'lvl2', 'lvl3',]
 module_loc=os.path.join(*loc)
-module_env=Environ(osenv=True, trace_env=['A1', ], logclass='Example') #, ulogger=logger)
+module_env=Environ(osenv=True, trace_env=['A1', 'X1', ], logclass='Example') #, ulogger=logger)
+module_env.loads(path=module_loc)
+module_env.updates(input_environ=input_environ)
+
+loc=[root_loc, 'penv2', 'lvl1', 'lvl2', 'lvl3',]
+module_loc=os.path.join(*loc)
+module_env=Environ(osenv=True, trace_env=['A1', 'X1', 'PENV1_LOC'], logclass='Example') #, ulogger=logger)
 module_env.loads(path=module_loc)
 module_env.updates(input_environ=input_environ)
 

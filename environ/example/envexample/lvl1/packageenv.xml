@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<environment>
-  <environ>
-    <var name='D1' value='13' export='True' override='True'/> 
-    <var name='C1' value='${D1}' export='True' override='True'/> 
-    <var name='D2' value='23' export='True' override='True'/> 
-    <var name='C2' value='${D2}' export='True' override='True'/> 
-  </environ>
-</environment>

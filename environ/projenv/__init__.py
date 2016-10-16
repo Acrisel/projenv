@@ -1,3 +1,5 @@
-from .main import Environ
-from .main import EnvVar
-from .main import advise_project_loc
+from .projenv import Environ
+from .projenv import EnvVar
+from .projenv import advise_project_loc
+
+__version__ = "2.0.0"
