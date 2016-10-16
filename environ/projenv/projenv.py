@@ -529,17 +529,12 @@ class Environ(object):
                 if envnodes:
                     config['envnodes']=[x.strip() for x in envnodes.split(',')]
         return config
-        
-    def __get_env_path( self, path ):
-        ''' Gets the environment schema representing Path.
-        This include fetching all environment nodes from path to its project. 
-        For each path node, we add its environment into list (env nodes).
-         '''
-        #mark=self.DOTPROJECTENV
-        
+    
+    def __get_nodes_on_path(self, path):
+        ''' find nodes to evaluate by walking the tree and fetching 
+                   environment files '''
         path=expandvars( path, environ=self )
         envlogger.debug('Evaluating file: {}'.format( path ))
-        
         env_nodes=list()
         if not pathhasvars( path ):
             path=os.path.abspath( path )
@@ -547,18 +542,16 @@ class Environ(object):
             config=self.__adopt_project_config( project_loc )
             
             if relative_loc is not None:
-                # find nodes to evaluate by walking the tree and fetching 
-                # environment files 
+                '''find nodes to evaluate by walking the tree and fetching 
+                   environment files '''
                 head=relative_loc
                 rel_nodes=list()
                 while head:
                     head, tail=os.path.split( head )
                     if tail:
-                        rel_nodes.append( tail )
-                #rel_nodes=os.path.split(relative_loc)
+                        rel_nodes.append( tail )               
                 rel_nodes.reverse()
-                #if project_loc == os.path.abspath(os.sep):
-                #    raise EnvironError("Project environment file {} doesn't exist for: {}".format(self.DOTPROJECTENV,path))
+                
                 start=project_loc
                 nodes=[start]
                 for node in rel_nodes:
@@ -571,9 +564,24 @@ class Environ(object):
                         env_nodes.append(env_node) 
             else:
                 raise EnvironError("Cannot find root project for: {}".format(path))
+        return env_nodes
+            
+        
+    def __get_env_path( self, path ):
+        ''' Gets the environment schema representing Path.
+        This include fetching all environment nodes from path to its project. 
+        For each path node, we add its environment into list (env nodes).
+         '''
+        #mark=self.DOTPROJECTENV
+        
+        path=expandvars( path, environ=self )
+        envlogger.debug('Evaluating file: {}'.format( path ))
+        
+        env_nodes=self.__get_nodes_on_path(path)
         
         ''' Combine all path nodes into single dict - override in order'''
         env_path_raw=OrderedDict()
+        
         for env_node in env_nodes:
             self.__update_env_map(env_path_raw, env_node)
                 
