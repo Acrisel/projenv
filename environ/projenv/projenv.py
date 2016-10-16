@@ -56,7 +56,7 @@ class EnvironError(Exception):
 
 ENV_CONFIG_FILE=".envconfig.xml"
 
-configure={ 
+CONFIGURE={ 
     "envnodes": ['.envpackage.xml', '.envoverride.xml'],
     "enclosure" : 'environ',
     'syntax': 'xml',
@@ -281,7 +281,7 @@ class Environ(object):
                 handler.setFormatter(formatter)            
                 envlogger.addHandler(handler)
             
-        self.__config=configure
+        self.__config=CONFIGURE
         
         self.envnodes=self.__config['envnodes']
         
@@ -476,7 +476,7 @@ class Environ(object):
         self.__eval_env_schema_bottom_up(env_schema)
         self.__eval_env_schema_top_down()
                 
-    def __get_env_node(self, path):
+    def __get_env_node(self, path, config):
         ''' get environments files starting from path.
             adds list of import files and convert them to environment schema '''
         #node_files=_EnvNode()
@@ -484,7 +484,7 @@ class Environ(object):
             node_files=_get_available_env_files(path=path, #projectenv=self.DOTPROJECTENV, 
                                                 #packageenv=self.PACKAGEENV, 
                                                 #personaleenv=self.PERSONALENV
-                                                envnodes=self.envnodes,
+                                                envnodes=config['envnodes'],
                                                 )
             envlogger.debug('Found node schema {}: \n\t{}'.format(path, repr(node_files)))
             node_env=_make_node_schema(node_files, enclosure=self.__config['enclosure'], trace_env=self.trace_env) #, logger=self.logger)
@@ -494,14 +494,10 @@ class Environ(object):
     def __update_env_map(self, source_map, override_map):
         ''' 
         Description:
-        
             Update source_map with vars from override_map. 
             Take override quality into considerations 
-        
         Args:
-        hgf
         Returns:
-        
         Raises:
         
         '''
@@ -519,6 +515,7 @@ class Environ(object):
             source_map.update(override_map) 
     
     def __adopt_project_config( self, project_loc ):
+        config=CONFIGURE
         config_file=os.path.join(project_loc, ENV_CONFIG_FILE)
         if os.path.isfile( config_file):
             root=_get_root_env(config_file, 'environ')
@@ -530,7 +527,8 @@ class Environ(object):
             if envnodes_elm:
                 envnodes=envnodes_elm.firstChild.nodeValue
                 if envnodes:
-                    self.envnodes=[x.strip() for x in envnodes.split(',')]
+                    config['envnodes']=[x.strip() for x in envnodes.split(',')]
+        return config
         
     def __get_env_path( self, path ):
         ''' Gets the environment schema representing Path.
@@ -546,7 +544,8 @@ class Environ(object):
         if not pathhasvars( path ):
             path=os.path.abspath( path )
             (project_loc, relative_loc)=advise_project_loc( path=path ) #, mark=mark)
-            self.__adopt_project_config( project_loc )
+            config=self.__adopt_project_config( project_loc )
+            
             if relative_loc is not None:
                 # find nodes to evaluate by walking the tree and fetching 
                 # environment files 
@@ -567,7 +566,7 @@ class Environ(object):
                         start=os.path.join(start, node)
                         nodes.append(start)
                 for node in nodes:
-                    env_node=self.__get_env_node(path=node)
+                    env_node=self.__get_env_node(path=node, config=config)
                     if len(env_node) > 0:
                         env_nodes.append(env_node) 
             else:

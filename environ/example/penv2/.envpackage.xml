@@ -2,7 +2,7 @@
 
 <environment>
   <environ>
-    <import name='PENV1' path='' comment='Import local penv1 sandbox'/>
+    <import name='PENV1' path='/private/var/acrisel/sand/environ/environdev/environ/example/penv1/' comment='Import local penv1 sandbox'/>
     
     <var name='PROJ_PREFIX' value='PENV2_' export='True'/>
     <var name='PENV2_PROJ_NAME' value='penv2' export='True'/>
