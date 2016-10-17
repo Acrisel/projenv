@@ -2,7 +2,7 @@
 <environment>
   <environ>
     <!--  <var name='PENV1_LOC' value='/private/var/acrisel/sand/environ/environdev/environ/example/penv1/' />  -->
-    <import name='PENV1' path='/private/var/acrisel/sand/environ/environdev/environ/example/penv1/' comment='Import local penv1 sandbox'/>
+    <import name='PENV1' path='${PWD}/../penv1/' comment='Import local penv1 sandbox'/>
     <var name='PENV2_PROJ_LOC' value='/private/var/acrisel/sand/environ/environdev/environ/example/penv2/' export='True' virtual='True'/>
     <var name='ENV_NAME' value='atest' export='True'/>
   </environ>
