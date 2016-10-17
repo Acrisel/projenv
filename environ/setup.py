@@ -9,10 +9,17 @@ is the Python package in your project. It's the top-level folder containing the
 __init__.py module that should be in the same directory as your setup.py file
 /-
   |- README.rst
+  |- CHANGES.txt
   |- setup.py
   |- dogs 
      |- __init__.py
      |- catcher.py
+
+To create package and upload:
+
+  python setup.py sdist
+  python setup.py sdist upload
+
 '''
 PACKAGE = "projenv" 
 
@@ -78,7 +85,7 @@ setup_info={'name': NAME,
  'extras_require': {'dev': [], 'test': []},
  'classifiers': ['Development Status :: 5 - Production/Stable',
                  'Environment :: Other Environment',
-                 'Framework :: Project Settings and Operation',
+                 #'Framework :: Project Settings and Operation',
                  'Intended Audience :: Developers',
                  'License :: OSI Approved :: MIT License',
                  'Operating System :: OS Independent',

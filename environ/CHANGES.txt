@@ -1,0 +1,4 @@
+2.0.0, 2016/10/16 -- 
+ * Introducing envconfig.xml which allows override of default node files. 
+ * Change default environment files to: .envpackage.xml and .envoveride.xml
+ * Allow backwards compatibility by setting project config: .envconfig.xml
