@@ -1,39 +1,50 @@
-projenv provides mechanism for project to manage parameters for programs in
-hierarchical way.
+=======
+PROJENV
+=======
 
 Overview
 ========
-Environment is a special type of dictionary, holding parameters used by parts.
-There are multiple levels and types of environments playing part in program
-run. Environment evaluation process walks the project tree from top to program
-location.  In each non-root node (package branch), there could be one file
-defining nodes of environment. In root note there could be two types. In
-addition ability  overwrite variables in personal setting is supported using
-personalenv file.
+
+projenv provides mechanism for project to manage parameters for programs in
+hierarchical way.
+Environment is a special type of dictionary holding parameters used by parts. 
+There are multiple levels and types of environment files playing part in program run.
 
 
-Definitions
-===========
-+-------+------------+-----------------------------------------------------+
-| Number| Name       | Description                                         |
-+=======+============+=====================================================+
-| 1     |.projectenv | read-only project level environment variables; also |
-|       |            | identifies project root location.                   |
-+-------+------------+-----------------------------------------------------+
-| 2     | packageenv | addon environment for given read-only environment   |
-|       |            | in local or upper environments.                     |
-+-------+------------+-----------------------------------------------------+
-| 3     | personalenv| personal overrides for project or package           |
-|       |            | environment. It may include only overrides.         |
-+-------+------------+-----------------------------------------------------+
+Environment node
+================
+
+Environment evaluation process walks the project tree from top to program location. 
+In each node it looks for set of files that defines the environment parameters.
+By default, environment is derived from two type of files as each node:
+
++-------+------------------+------------------------------------------------+
+| Number| Name             | Description                                    |
++=======+==================+================================================+
+| 1     | .envpackage.xml  | environment parameters for the package.        |
++-------+------------------+------------------------------------------------+
+| 2     | .envoverride.xml | personal overrides for package environment. It |
+|       |                  | may include re-define parameters with override |
+|       |                  | ride=True.                                     |
++-------+------------------+------------------------------------------------+
+
+Project can alter this default behavior by defining **.envconfig.xml** at its root 
+with specific value for envnodes.
+
+.. code-block:: xml
+
+  <environ>
+    <envnodes>.envproject, .envpackage, .envoverride</envnodes>
+  </environ>
 
 Program Interface
 =================
 
-Within programs there are three types of access points to the environment variables.
-To get projenv dictionary, program can perform the following command:
+Within programs there are three types of access points to the 
+environment variables. To get projenv dictionary, program can 
+perform the following command:
 
-1. Loading environment variables from project structure
+1. Loading environment variables from project structure 
 2. Updating environment variable in program
 3. Accessing environment variables
 
@@ -51,19 +62,14 @@ Environ class __init__ has the following signature
 
 ::
 
-   Environ(self, osenv=True, configure=None, trace_env=None, logclass=None, logger=None)
+   Environ(self, osenv=True, trace_env=None, logclass=None, logger=None)
 
 +----------+------------------------------------------------------+------------------------------+
 | Name     |Description                                           |Default Values                |
 +==========+======================================================+==============================+
 | osenv    | If set, load os environ.                             | True                         |
 +----------+------------------------------------------------------+------------------------------+
-| configure| Dictionary overriding default names for environment  | .projectenv : .projectenv    |
-|          | files.                                               |  packageenv : packageenv     |
-|          |                                                      |  personalenv : personalenv   |
-|          |                                                      |  envtag : environ            |
-+----------+------------------------------------------------------+------------------------------+
-| trace_env| List of enviornment variables to trace               |  None                        |
+| trace_env| List of environment variables to trace               |  None                        |
 +----------+------------------------------------------------------+------------------------------+
 | logclass | If provided the string will be used for trace naming.|  None                        |
 +----------+------------------------------------------------------+------------------------------+
@@ -71,10 +77,7 @@ Environ class __init__ has the following signature
 |          | getChild to set trace name.                          |                              |
 +----------+------------------------------------------------------+------------------------------+
 
-
-In addition to file name overrides, configuration dictionary can provide syntax used in these files and the environment root
-tag under which environment variables are defined.
-
+Within derivative articles environment can be updated with environment variable as follows.
 
 Updating environment variables
 ==============================
@@ -121,34 +124,43 @@ Each node can be evaluated and have its own representation of the environment.
 Single Project Environment Tree
 *******************************
 
-At each node, environment is evaluated in the following sequence:
-   1. .projectenv, if available, is read and set.
-   2. Next packageenv, if available, is read and set.
-   3. Finally, personalenv overrides, if available, is read and set.
+At each node, environment is evaluated in the sequence or envnodes configuration parameter. 
+By default this means:
 
-Example environment tree in a project.
-Program A will include environment setting of Project and Package A locations.
+   1. First .envpackage.xml, if available, is read and set.
+   2. Next, .envoverride.xml overrides, if available, is read and set.
+   
+As shown below, this behavior could be changed to support different 
+environment node structure. For example, to support legacy projects using older 
+version of projenv, the following configuration .envconfig.xml can be used:
+
+.. code-block:: xml
+
+  <environ>
+    <envnodes>.projectenv, packageenv, personalenv</envnodes>
+  </environ>
+
+The following figure shows a possible use of default configuration.The structure below 
+shows example environment tree in a project.  When the above command is engaged in 
+Program A, it would include environment setting of Project and Package A locations. 
 Program AB will include Program A, Package A and Package AB accordingly.
 
      Project
-         - .projectenv
-         -  packageenv
-         -  personalenv
+         -  envpackage
+         -  envoverride
          -  Program A
          -  Package A
-              - packageenv
-              - personalenv
+              - evpackage
+              - envoverride
               - Package AB
-                    - packageenv
-                    - personalenv
+                    - envpackage
+                    - envoverride
                     - Program AB
 
 
-Example for project environment file
-************************************
-
-Core environment is tagged under <environ>.
-Environ mechanism would look for this tag.  Once found, it would evaluate its content as environment directive.
+The structure below shows example of an environment file. Core environment is tagged under 
+< environ>. Environ mechanism would look for this tag. Once found, it would evaluate its 
+content as environ- ment directive.
 
 .. code-block:: xml
 
@@ -165,8 +177,9 @@ Environ mechanism would look for this tag.  Once found, it would evaluate its co
     </environ>
   </environment>
 
-Note: <environment> tag is to provide enclosure to environ.
-Environ mechanism is not depending on its existent per se.  However, some kind on enclosure is required;  <environ> can not be in top level of the XML.
+Note: <environment> tag is to provide enclosure to environ. Environ mechanism is not 
+depending on its existent per se.  However, some kind on enclosure is required;  <environ> 
+can not be in top level of the XML.
 
 
 Example of Multiple Project Environment Tree
@@ -178,7 +191,7 @@ At each import, environment is evaluated in the following sequence:
    3. Finally, insert the resulted imported map instead of the import directive (flat).
 
 
-Project A: /Users/me/projs/proja/.projectenv.xml
+Project A: /Users/me/projs/proja/.envpackage.xml
 
 .. code-block:: xml
 
@@ -191,7 +204,7 @@ Project A: /Users/me/projs/proja/.projectenv.xml
   </environment>
 
 
-Project B: /Users/me/projs/projb/.projectenv.xml'
+Project B: /Users/me/projs/projb/.envpackage.xml'
 
 .. code-block:: xml
 
@@ -209,13 +222,109 @@ the value /Users/me/tmp/bname.
 **Recursive** inclusion of environments (recursive import statement) would cause evaluation of environment variables to be loaded recursively.
 Consideration is given to overrides in post import environments.
 
-**Note**:import path can only include environment variables that are in the OS level pre-eveluation.
+**Note**: import must be set as full path for the installation of the included project. It is therefore best practice to populate real path 
+only in .envoverride.xml and not in .envpackage.xml.
 
+Best Practices
+==============
 
+So many options, so what should one do?
 
+Naming Parameters
+*****************
+
+*Prefix* your parameters with an identifier. Specifically if your projects would 
+need to cooperate (import their environment). We have all parameters us ’AC ’ as prefix. We 
+also define ’AC PROJ PREFIX’ that can be used in program to construct parameter name.
+
+We recommend following UNIX convention for environment variables. Use upper-case letters 
+separated with underscore. We use this style in all of this document listings.
+
+*Drivers and Derivatives*, for the sake of this discussion we define three types of parameters:
+1. standalone is a parameter that is not dependent on another and is not used by another parameter.
+2. driver is a parameter that other parameters defined by it.
+3. derivative is a parameter that includes a driver in its definitions.
+
+A parameter can be both a driver and derivative.
+Use drivers and derivative parameter definition in such a way that users may personalize the 
+behavior of the system. For example, developers may want to change their own directory structure to 
+fit their own tools.
+
+.envproject
+***********
+
+Dot (.) envproject, although not default in envnodes configuration, good practice to use. It 
+is usually contains parameters that are good for the all projects. You can look at is as your 
+standard parameters to all projects that you produce. In the following listing locations are 
+defined as derivatives of AC VAR BASE. This is useful since users of this project can override 
+that parameter to change to their own structure.
+
+.. code-block:: xml
+
+  <environment>
+    <environ>
+      <var name=’AC_PROJ_PREFIX’ value=’AC_’ export=’True’ override=’True’/>
+      <var name=’AC_VAR_BASE’ value=’/var/accord/data/’ override=’True’ export=’True’/>
+      <var name=’AC_ENV_NAME’ value=’.’ override=’True’ export=’True’/>
+      <var name=’AC_VAR_LOC’ value=’${AC_VAR_BASE}${AC_ENV_NAME}/’ override=’True’ export=’True’/>
+      <var name=’AC_LOG_LOC’ value=’${AC_VAR_LOC}/log/’ override=’True’ export=’True’/>
+      <var name=’AC_REJ_LOC’ value=’${AC_VAR_LOC}/rej/’ override=’True’ export=’True’/>
+      <var name=’AC_RUN_LOC’ value=’${AC_VAR_LOC}/run/’ override=’True’ export=’True’/>
+      <var name=’AC_IN_LOC’ value=’${AC_VAR_LOC}/in/’ override=’True’ export=’True’/>
+      <var name=’AC_OUT_LOC’ value=’${AC_VAR_LOC}/out/’ override=’True’ export=’True’/>
+    </environ>
+  </environment>
+
+.envpackage
+***********
+Dot envpackage includes definitions for that are specific to the project or the package. 
+Usually this is kept for things like RPC PORT or maybe MAIL SEND SMTP.
+
+.envoverride
+************
+
+Dot envoverride provides means to personalize an environment. Users can override .envpackage 
+or .envproject parameters. you may want to exclude envoverride from your code repository 
+(e.g., add envoverride.xml to .gitignore). Otherwise, users may override each other 
+personalizations.
+
+Installation, validation and example program
+============================================
+
+How to install, validate installation and use the package?
+
+Installation
+************
+
+To install run following command: pip install projenv
+
+Validation
+**********
+
+test.py in github link below perform unit test cases to check projenv.
+
+Example
+*******
+
+See example of the program using projenv on 
+Github https://github.com/Acrisel/projenv/blob/master/environ/example/example
+
+Backwards compatibility
+=======================
+
+Due the changes in naming of node base files, projects using previous version can do one of the following steps.
+
+1. Change node files name to fit the new naming convention.
+2. Add **.envconfig.xml** with proper envnodes definition as follows:
+
+.. code-block:: xml
+
+    <environ>
+      <envnodes>.projectenv, packageenv, personalenv</envnodes>
+    </environ>
+ 
 Additional resources
 ====================
-
 
 Documentation is in the "docs" directory and online at the design and use of projenv.
 
