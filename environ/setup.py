@@ -49,7 +49,7 @@ URL is the URL for the project. This URL may be a project website, the Github re
 or whatever URL you want. Again, this information is optional.
 '''
 URL = 'https://github.com/Acrisel/projenv'
-VERSION = __import__(PACKAGE).__version__
+VERSION = '2.0.1' # __import__(PACKAGE).__version__
 
 # Warn if we are installing over top of an existing installation. This can
 # cause issues where files that were deleted from a more recent Accord are
@@ -81,7 +81,7 @@ setup_info={'name': NAME,
  'keywords': 'project, virtualenv, parameters',
  'packages': [PACKAGE],
  'install_requires': ['python-dateutil>=2.4.2',
-                      'namedlist>=1.7'],
+                      'namedlist>=1.7',],
  'extras_require': {'dev': [], 'test': []},
  'classifiers': ['Development Status :: 5 - Production/Stable',
                  'Environment :: Other Environment',
