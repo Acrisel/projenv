@@ -77,3 +77,4 @@ Thumbs.db
 # Pypi build and Sphinx files #
 ######################
 build/
+*.egg-info/

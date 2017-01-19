@@ -363,10 +363,12 @@ class Environ(object):
     def values(self):
         return map(lambda x: x.value, self.environ.values())
     
-    def get(self, key):
+    def get(self, key, *args):
         var=self.environ.get(key)
         if var is not None:
             value=var.value
+        elif len(args) > 0:
+            value=args[0]
         else:
             value=None
         return value                     

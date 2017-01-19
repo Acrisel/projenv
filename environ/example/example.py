@@ -38,6 +38,12 @@ module_env=Environ(osenv=True, trace_env=['A1', 'X1', 'PENV1_LOC'], logclass='Ex
 module_env.loads(path=module_loc)
 module_env.updates(input_environ=input_environ)
 
+print('getting', module_env.get('A1'), module_env.get('AA', 'Not found'))
+try:
+    print(module_env.get('AA'))
+except:
+    print('failed to get("AA")')
+
 #print('POST ENVIRON:', repr(module_env))
 module_env.log_env()
 
