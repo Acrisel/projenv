@@ -69,8 +69,7 @@ def add_ext(filename):
     return filename # + ENV_SYNTAX_EXT[Configure['syntax']]
 
 def advise_project_loc(path=None, mark=None):
-    ''' Finds root path for project according to a file that 
-    would identifies with root path.
+    ''' Finds root path for project according to a file that would identifies with root path.
         Program will walk upwards directory tree starting with path
         until mark is found.
     
@@ -89,6 +88,8 @@ def advise_project_loc(path=None, mark=None):
     #    mark=add_ext(DOTPROJECTENV)
     
     cwd=os.getcwd() if path is None or path == '' else path
+    if os.path.isfile(cwd):
+        cwd=os.path.dirname(cwd)
     last_sandbox=os.path.abspath(cwd) 
     last_rel_loc=''
     next_sandbox=last_sandbox 
@@ -99,7 +100,6 @@ def advise_project_loc(path=None, mark=None):
     while True: # and not found:
         conf_file=os.path.join(next_sandbox, '__init__.py')
         if not os.path.isfile(conf_file): break
-        
         found=True
         last_sandbox=next_sandbox
         last_rel_loc=next_rel_loc
@@ -558,6 +558,7 @@ class Environ(object):
                     if node:
                         start=os.path.join(start, node)
                         nodes.append(start)
+                envlogger.debug('Nodes lookup {}: \n\t{}'.format(path, repr(nodes)))
                 for node in nodes:
                     env_node=self.__get_env_node(path=node, config=config)
                     if len(env_node) > 0:

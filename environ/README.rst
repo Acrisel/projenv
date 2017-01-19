@@ -320,8 +320,11 @@ Due the changes in naming of node base files, projects using previous version ca
 .. code-block:: xml
 
     <environ>
-      <envnodes>.projectenv, packageenv, personalenv</envnodes>
+      <envnodes>.projectenv.xml, packageenv.xml, personalenv.xml</envnodes>
     </environ>
+    
+also, each folder in the project hierarchy need to have __init__.py file; this is since the search for parent 
+folder stops when a folder is found not to have __init__.py file.
  
 Additional resources
 ====================
