@@ -1,4 +1,4 @@
-__version__ = "2.0.3"
+from .VERSION import __version__
 
 from .projenv import Environ
 from .projenv import EnvVar
