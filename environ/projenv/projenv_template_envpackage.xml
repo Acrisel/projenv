@@ -2,10 +2,10 @@
 
 <environment>
   <environ>
-    <var name='PROJ_PREFIX' value='${__TEMPLATE_PREFIX__}' export='True'/>
+    <var name='PROJENV_PREFIX' value='${__TEMPLATE_PREFIX__}' export='True'/>
     <var name='${__TEMPLATE_PREFIX__}PROJ_NAME' value='${__TEMPLATE_PROJ_NAME__}' export='True'/>
     <var name='${__TEMPLATE_PREFIX__}PROJ_VER' value='${__TEMPLATE_VERSION__}' export='True'/>
-    <var name='${__TEMPLATE_PREFIX__}PROJ_LOC' value='' export='True' virtual='True' override='True'/>
+    <var name='${__TEMPLATE_PREFIX__}PROJ_LOC' value='MUST BE OVERRIDE IN .envoverrides.xml' export='True' virtual='True' override='True'/>
     <var name='${__TEMPLATE_PREFIX__}PROJ_API_LOC' value='${${__TEMPLATE_PREFIX__}PROJ_LOC}api/' export='True'/>
     <var name='${__TEMPLATE_PREFIX__}PROJ_DB_LOC' value='${${__TEMPLATE_PREFIX__}PROJ_LOC}db/' export='True'/>
     <var name='${__TEMPLATE_PREFIX__}PROJ_SRC_LOC' value='${${__TEMPLATE_PREFIX__}PROJ_LOC}src/' export='True'/>
@@ -17,9 +17,11 @@
     <var name='${__TEMPLATE_PREFIX__}ENCODING' value='ascii' export='True'/>
     <var name='${__TEMPLATE_PREFIX__}BYTEORDER' value='network' export='True'/>
     
+    <!-- 
     <var name='${__TEMPLATE_PREFIX__}VS_LOC' value='${__TEMPLATE_VS_LOC__}' override='True' export='True'/>
-    <var name='${__TEMPLATE_PREFIX__}ENV_NAME' value='.' override='True' export='True'/>
-    <var name='${__TEMPLATE_PREFIX__}VAR_LOC' value='${${__TEMPLATE_PREFIX__}VS_LOC}${${__TEMPLATE_PREFIX__}PROJ_NAME}/${ENV_NAME}/' override='True' export='True'/>
+    -->
+    <var name='${__TEMPLATE_PREFIX__}ENV_NAME' value='.' override='True' export='True' comment='Should be override .envoverrides.xml'/>
+    <var name='${__TEMPLATE_PREFIX__}VAR_LOC' value='${__TEMPLATE_VAR_LOC__}${${__TEMPLATE_PREFIX__}ENV_NAME}/' override='True' export='True'/>
     <var name='${__TEMPLATE_PREFIX__}LOG_LOC' value='${${__TEMPLATE_PREFIX__}VAR_LOC}log/' override='True' export='True'/>
     <var name='${__TEMPLATE_PREFIX__}REJ_LOC' value='${${__TEMPLATE_PREFIX__}VAR_LOC}rej/' override='True' export='True'/>
     <var name='${__TEMPLATE_PREFIX__}RUN_LOC' value='${${__TEMPLATE_PREFIX__}VAR_LOC}run/' override='True' export='True'/>

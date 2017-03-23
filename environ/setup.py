@@ -54,6 +54,18 @@ with open(version_file, 'r') as vf:
     vline=vf.read()
 VERSION = vline.strip().partition('=')[2].replace("'", "")
 
+scripts=['projenv/export_projenv.py',
+         'projenv/export_projenv.sh',
+         'projenv/mkprojenvpackage.py',
+         'projenv/mkprojenvoverride.py',
+         'projenv/mkprojenvdirs.py',
+         'projenv/projenv_template_envpackage.xml',
+         'projenv/projenv_template_envoverride.xml',
+         'projenv/addprojenv2virtualenv.py', ]
+
+other_files=['projenv/projenv_template_envpackage.xml',
+             'projenv/projenv_template_envoverride.xml',]
+
 # Warn if we are installing over top of an existing installation. This can
 # cause issues where files that were deleted from a more recent Accord are
 # still present in site-packages. See #18115.
@@ -81,8 +93,11 @@ setup_info={'name': NAME,
  'description': DESCRIPTION,
  'long_description': open("README.rst", "r").read(),
  'license': 'MIT',
- 'keywords': 'project, virtualenv, parameters',
+ 'keywords': 'project, sandbox, virtualenv, virtualenvwrapper, configuration, parameters',
  'packages': [PACKAGE],
+ 'scripts' : scripts,
+ 'package_data':{'': other_files},
+ 'include_package_data':True,
  'install_requires': ['python-dateutil>=2.4.2',
                       'namedlist>=1.7',],
  'extras_require': {'dev': [], 'test': []},

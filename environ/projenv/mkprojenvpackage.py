@@ -70,10 +70,10 @@ def mk_proj_name(ac_ws_loc):
                 
     return proj_name   
 
-def get_key(title, default=''):   
-    result=''
-    while not result:
-        show_default=' [{}]'.format(default) if default else ''
+def get_key(title, default=None):   
+    result=None
+    while result is None:
+        show_default=' [{}]'.format(default) if default is not None else ''
         in_keys=input("Enter {}{}: ".format(title, show_default))
         in_keys=in_keys.strip()
         if in_keys.replace(' ', '') == in_keys:
@@ -85,12 +85,13 @@ def get_key(title, default=''):
             result=default
     return result
 
-def mk_proj_prefix(args):
-    if not args.prefix:
-        result=get_key( title='project prefix')
-    else:
-        result=args.prefix[0]
-    return result
+def mk_proj_prefix(project, prefix, force_defaults):
+    prefix=args.prefix
+    if not prefix:
+        prefix="%s_" % project.upper()
+        if not force_defaults:
+            prefix=get_key( title='project prefix', default=prefix)
+    return prefix
 
 def mk_vs_area(args, proj_name):
     if not args.data:
@@ -121,7 +122,7 @@ def mk_vs_area(args, proj_name):
     return var    
 
 def get_projectenv_template(template_loc):
-    template_file=os.path.join(template_loc,'template_envpackage.xml')
+    template_file=os.path.join(template_loc,'projenv_template_envpackage.xml')
     try:
         with open(template_file, 'r') as content_file:
             project_template=content_file.read()
@@ -131,7 +132,7 @@ def get_projectenv_template(template_loc):
     return project_template
 
 def get_personalenv_template(template_loc):
-    template_file=os.path.join(template_loc,'template_envoverride.xml')
+    template_file=os.path.join(template_loc,'projenv_template_envoverride.xml')
     try:
         with open(template_file, 'r') as content_file:
             project_template=content_file.read()
@@ -151,14 +152,22 @@ def get_template_loc(loc=None):
         this_loc=loc
     return this_loc
 
-def mk_env_name(args):
-    if not args.environment:
+def mk_env_name(environment, force_defaults):
+    if not environment:
+        environment='.'
+        if not force_defaults:
+            environment=get_key( title='environment name', default=environment)
+    return environment
+
+    '''
+    if not environment:
         in_env_name=input("Enter environment name [.]: ")
         env_name=in_env_name.replace(' ','')
         env_name='.' if not env_name else env_name.lower()
     else:
-        env_name=args.environment
+        env_name=environment
     return env_name
+        '''
 
 #def get_proj_prefix(proj_loc):
 #    try:
@@ -174,55 +183,7 @@ def mk_env_name(args):
 #
 #    return prefix
 
-def mk_project(args):
-    template_loc=get_template_loc(args.templates)
-    
-    proj_loc=args.project[0]
-    proj_loc=os.path.abspath(proj_loc)
-    envpackage_file=os.path.join(proj_loc, '.envpackage.xml')
-    envoverride_file=os.path.join(proj_loc, '.envoverride.xml')
-    
-    # if package file already there, and it is intent to rebuild,
-    # validate with user that this is the intention before rebuilding.
-    if (os.path.isfile(envpackage_file) and not args.override):
-        pass
-    
-    if not args.name:
-        name=os.path.basename( proj_loc )
-        name=get_key(default=name, title='project name (name of folder that will be created for project)')
-    
-    proj_version=get_key("project version", default='0.1.0')
-        
-    #ac_ws_loc=mk_ws_loc(args=args, proj_name=proj_name)
-    #ac_proj_loc=os.path.join(ac_ws_loc,proj_name)
-    envvars={'__TEMPLATE_PROJ_LOC__': proj_loc,
-             '__TEMPLATE_PROJ_NAME__':name,
-             '__TEMPLATE_VERSION__':  proj_version, }
-
-    if not args.override:
-        vs_loc=mk_vs_area(args=args, proj_name=name)
-        envvars.update({'__TEMPLATE_VS_LOC__':vs_loc,})
-
-    proj_prefix=mk_proj_prefix(args=args)
-    env_name=mk_env_name(args=args)
-
-    envvars.update({'__TEMPLATE_PREFIX__':proj_prefix,
-                    '__TEMPLATE_ENV_NAME__': env_name,})
-    
-    
-    #projectloc=os.path.join(ac_proj_loc, ac_proj_name)
-
-    if not args.override:
-        projectenv_template=get_projectenv_template(template_loc)
-        projectenv=Template(projectenv_template).safe_substitute(envvars)
-               
-        try:
-            with open(envpackage_file, 'w') as file:
-                file.write(projectenv)
-        except Exception as e:
-            abort('Failed to write projectenv {}; {}'.format(envpackage_file, repr(e)))        
-        print('Successfully created projectenv {}'.format(envpackage_file))
-    
+def mk_overrides(template_loc, envvars, envoverride_file):
     personalenv_template=get_personalenv_template(template_loc)
     personalenv=Template(personalenv_template).safe_substitute(envvars)
     try:
@@ -230,29 +191,97 @@ def mk_project(args):
             file.write(personalenv)
     except Exception as e:
         abort('Failed to write projectenv {}; {}'.format(envoverride_file, repr(e)))            
-    print('Successfully created projectenv {}'.format(envoverride_file))
+
+def get_projenv_files(proj_loc):
+    envpackage_file=os.path.join(proj_loc, '.envpackage.xml')
+    envoverride_file=os.path.join(proj_loc, '.envoverride.xml')
+    return envpackage_file, envoverride_file
+    
+def mk_project(args):
+    template_loc=get_template_loc(args.templates)
+    
+    proj_loc=os.path.abspath(args.project)
+    envpackage_file, envoverride_file=get_projenv_files(proj_loc)
+    
+    # if package file already there, and it is intent to rebuild,
+    # validate with user that this is the intention before rebuilding.
+    if (os.path.isfile(envpackage_file) and args.skip_override):
+        pass
+    
+    if not args.name:
+        name=os.path.basename( proj_loc )
+        if not args.force_defaults:
+            name=get_key(default=name, title='project name (name of folder that will be created for project)')
+    
+    if not args.force_defaults:
+        proj_version=get_key("project version", default=args.version)
+        
+    envvars={'__TEMPLATE_PROJ_LOC__': proj_loc,
+             '__TEMPLATE_PROJ_NAME__':name,
+             '__TEMPLATE_VERSION__':  proj_version, 
+             }
+
+    vs_loc=mk_vs_area(args=args, proj_name=name)
+    envvars.update({'__TEMPLATE_VAR_LOC__':vs_loc,})
+
+    proj_prefix=mk_proj_prefix(project=name, prefix=args.prefix, force_defaults=args.force_defaults)
+    env_name=mk_env_name(environment=args.environment, force_defaults=args.force_defaults)
+
+    envvars.update({'__TEMPLATE_PREFIX__':proj_prefix,
+                    '__TEMPLATE_ENV_NAME__': env_name,})
+    
+    
+    #projectloc=os.path.join(ac_proj_loc, ac_proj_name)
+
+    projectenv_template=get_projectenv_template(template_loc)
+    projectenv=Template(projectenv_template).safe_substitute(envvars)
+               
+    try:
+        with open(envpackage_file, 'w') as file:
+            file.write(projectenv)
+    except Exception as e:
+        abort('Failed to write projectenv {}; {}'.format(envpackage_file, repr(e)))        
+    print('Successfully created projectenv {}'.format(envpackage_file))
+    
+    if not args.skip_override:
+        mk_overrides(template_loc, envvars, envoverride_file)            
+        print('Successfully created projectenv {}'.format(envoverride_file))
 
     return proj_loc
     
 if __name__ == '__main__':
     parser=argparse.ArgumentParser()
-
-    parser.add_argument('-t', '--templates', help='location of template location', type=str, nargs='?', metavar='TEMPLATES',)
-    parser.add_argument('-p', '--project', help='path to project', type=str, nargs=1, metavar='PROJECT')
-    parser.add_argument('-p', '--name', help='name to project', type=str, nargs='?', metavar='NAME')
+    
+    pwd=os.getcwd()
+    
+    parser.add_argument('-t', '--templates', type=str, metavar='PATH', default=None,
+                        help='location of templates. defaults to projenv built-in templates',)
+    parser.add_argument('-p', '--project', type=str, metavar='PATH', default=pwd,
+                        help='path to project. defaults to current working directory', )
+    parser.add_argument('-n', '--name', type=str, metavar='NAME', default=None,
+                        help='name to project. default for directory name of project location', )
     #parser.add_argument('-w', '--codespace', help='location of code space where sandbox are created', type=str, nargs='?', metavar='CODESPACE')
     #parser.add_argument('-s', '--source_loc', help='location of source code workspace', type=str, nargs='?', metavar='PATH')
-    parser.add_argument('-d', '--data', help='location of data space where data projects are created, default /var/data/(name of PROJECT)', type=str, nargs='?', metavar='DATADIR', default='')
-    parser.add_argument('-w', '--work', help='location of work space where processing in-work data is created, default DATA space', type=str, nargs='?', metavar='WORKDIR')
+    parser.add_argument('-d', '--data', type=str, metavar='PATH', default='',
+                        help='location of data space where data projects are created, default /var/data/(name of PROJECT)', )
+    parser.add_argument('-w', '--work', type=str, metavar='PATH',default='',
+                        help='location of work space where processing in-work data is created, default DATA space')
     #parser.add_argument('-d', '--data_loc', help='location of data workspace', type=str, nargs='?', metavar='PATH')
-    parser.add_argument('-x', '--prefix', help='project prefix ', type=str, nargs=1, metavar='PREFIX')
-    parser.add_argument('-e', '--environment', help='name of environment personalization', type=str, nargs='?', metavar='ENVIRONMENT')
-    parser.add_argument('-o', '--override', help='override', action='store_true')
+    parser.add_argument('-x', '--prefix', type=str, metavar='NAME', default='',
+                        help='project prefix used for environment parameters names. defaults to project name.', )
+    parser.add_argument('-e', '--environment', type=str, metavar='NAME', default='',
+                        help='name to be use to personalize var area.  Recommended to use when multiple users use the same var area', )
+    parser.add_argument('-v', '--version', type=str, metavar='VERSION', default='',
+                        help='version for this project environment. Use if need to bind environment version to project.', )
+    parser.add_argument('--no-override', action='store_true', default=False, dest='skip_override',
+                        help='skips creation of .envoverride.xml', )
+    parser.add_argument('--force-defaults', action='store_true', default=False, dest='force_defaults',
+                        help='forces the use of default. this option skips interaction', )
 
     args = parser.parse_args()
-    
+        
     projectloc=mk_project(args)
-    from .mkprojlocs import mk_proj_locs
+    from projenv.mkprojenvdirs import mk_proj_locs
     mk_proj_locs(projectloc)
 
 

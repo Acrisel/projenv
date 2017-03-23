@@ -7,9 +7,9 @@ Created on Apr 20, 2015
 '''
 
 import os
-from string import Template
 import argparse
-from .projenv import Environ  
+from projenv.main import Environ  
+from projenv.common import PROJENV_PREFIX, get_proenv_prefix
 
 def abort(msg):
     print(msg)
@@ -34,20 +34,29 @@ def get_proj_loc(args):
             continue
     else:
         proj_loc=args.source_loc
-    return proj_loc    
+    return proj_loc 
+
+def check_var_has_value(env, varname):
+    value=env.get(varname)
+    value=value.strip()
+    if not value:
+        abort('environment parameter %s is not define or does not have value. check you .envoverride.xml'.format(varname, projectloc))
+       
     
 def mk_proj_locs(projectloc):
 
-    ans=input("create project locations? [Yes]: ")
+    ans=input("create project folders? [Yes]: ")
     ans=ans.replace(' ', '').lower()
     ans='yes' if not ans else ans
     if ans in ['y', 'yes']:
-        print('Creating project locations:')   
+        print('Creating project folders:')   
         env=Environ().loads(path=projectloc)
-        try:
-            prefix=env['PROJ_PREFIX']
-        except KeyError:
-            abort('Failed to find environment variable AC_PROJ_PREFIX; should have been found in {}.projectenv.xml'.format(projectloc))
+        prefix=prefix=env.get(PROJENV_PREFIX)
+        if prefix is None:
+            abort('Failed to find environment variable {}; should have been found in {}.projectenv.xml'.format(PROJENV_PREFIX, projectloc))
+            
+        check_var_has_value(env, "%sPROJ_LOC" % prefix)
+        check_var_has_value(env, "%sVAR_LOC" % prefix)
         items=env.items()
         for n,v  in items:
             if n.startswith(prefix) and n.endswith('_LOC'):
@@ -63,12 +72,14 @@ def mk_proj_locs(projectloc):
 
 if __name__ == '__main__':
     parser=argparse.ArgumentParser()
-
-    parser.add_argument('-s', '--source_loc', help='location of source code workspace', type=str, nargs='?', metavar='PATH')
-
+    
+    pwd=os.getcwd()
+    
+    parser.add_argument('-p', '--project', type=str, metavar='PATH', default=pwd,
+                        help='path to project. defaults to current working directory', )
     args = parser.parse_args()
     
-    projectloc=get_proj_loc(args)
+    projectloc=os.path.abspath(args.project)
     mk_proj_locs(projectloc)
 
 

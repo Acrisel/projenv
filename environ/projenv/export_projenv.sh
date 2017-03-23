@@ -3,7 +3,7 @@
 # this file should be sourced for shell to export project's environment
 
 usage() {
-    printf "Usage: $0 [path to sandbox]\n"
+    printf "Usage: source $0 [path to sandbox]\n"
     printf "Description:\n"
     printf "  Source project environment from path to sandbox.\n"
     printf "  Current working directory is used if path is not provided.\n"
@@ -29,20 +29,20 @@ else
 fi
 
 if [ $myfault -eq 0 ]; then
-    tempfoo="export_env.sh"
+    tempfoo="export_projenv.sh"
     TMPFILE=`mktemp /tmp/${tempfoo}.XXXXXX`
     if [ $? -eq 0 ]; then
-	vars=$(export_env.py -s $sbox 2>$TMPFILE)
+	vars=$(export_projenv.py -p $sbox 2>$TMPFILE)
 	if [ $? -eq 0 ]; then
             echo $vars > $TMPFILE
 	    . $TMPFILE
-	    for d in $(find $AC_PROJ_LOC -type d | grep -v '__$'); do
-	       b=$(basename $d) 
-	       if [ ${b:0:1} != '.' ]; then
-	           pyadds=${d}${pyadds:+:}${pyadds}
-	       fi
-	    done
-	    export PYTHONPATH=${pyadds}${PYTHONPATH:+:}$PYTHONPATH
+	    #for d in $(find $AC_PROJ_LOC -type d | grep -v '__$'); do
+	    #   b=$(basename $d) 
+	    #   if [ ${b:0:1} != '.' ]; then
+	    #       pyadds=${d}${pyadds:+:}${pyadds}
+	    #   fi
+	    #done
+	    #export PYTHONPATH=${pyadds}${PYTHONPATH:+:}$PYTHONPATH
 	    rm $TMPFILE
 	else
 	    printf "Error: failed to create environment for project\n"

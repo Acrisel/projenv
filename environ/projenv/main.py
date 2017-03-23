@@ -18,9 +18,9 @@ import collections
 
 envlogger=logging.getLogger(__name__)
 
-from .expandvars import expandvars
-from .expandvars import pathhasvars
-from .cast_value import cast_value
+from projenv.expandvars import expandvars
+from projenv.expandvars import pathhasvars
+from projenv.cast_value import cast_value
 
 EnvVar=namedlist('EnvVar', 
                  [('name', None),
@@ -541,6 +541,8 @@ class Environ(object):
         if not pathhasvars( path ):
             path=os.path.abspath( path )
             (project_loc, relative_loc)=advise_project_loc( path=path ) #, mark=mark)
+            if project_loc is None:
+                raise EnvironError("Path provided is not set as projenv.")
             config=self.__adopt_project_config( project_loc )
             
             if relative_loc is not None:

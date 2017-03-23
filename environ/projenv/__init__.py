@@ -1,5 +1,5 @@
 from .VERSION import __version__
 
-from .projenv import Environ
-from .projenv import EnvVar
-from .projenv import advise_project_loc
+from .main import Environ
+from .main import EnvVar
+from .main import advise_project_loc
